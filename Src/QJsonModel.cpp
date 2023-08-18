@@ -206,9 +206,7 @@ QVariant QJsonModel::headerData(int section, Qt::Orientation orientation,
             return tr("Value");
         }
     }
-    else {
-        return QVariant();
-    }
+    return QVariant();
 }
 
 QModelIndex QJsonModel::index(int row, int column,
