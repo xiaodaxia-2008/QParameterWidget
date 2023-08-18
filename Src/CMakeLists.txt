@@ -1,0 +1,5 @@
+file(GLOB_RECURSE srcs CONFIGURE_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/*.cpp)
+add_library(QParameterWidget ${srcs})
+target_link_libraries(QParameterWidget PUBLIC Qt::Widgets nlohmann_json::nlohmann_json spdlog::spdlog)
+target_include_directories(QParameterWidget PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>)
+set_target_properties(QParameterWidget PROPERTIES AUTOMOC ON)

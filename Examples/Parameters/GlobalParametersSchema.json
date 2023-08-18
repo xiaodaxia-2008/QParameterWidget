@@ -1,0 +1,108 @@
+{
+    "name": "root",
+    "title": "全局参数",
+    "type": "object",
+    "properties": {
+        "FiberVisual": {
+            "title": "铺层显示",
+            "type": "object",
+            "properties": {
+                "ShowFiberTowCenterLine": {
+                    "type": "boolean",
+                    "title": "显示单根带中心线"
+                },
+                "ShowFiberCourseCenterLine": {
+                    "type": "boolean",
+                    "title": "显示压辊中心线"
+                },
+                "ShowFiberTowCenterLineDirection": {
+                    "type": "boolean",
+                    "title": "显示铺放方向"
+                },
+                "ShowFiberTowBoundaryLine": {
+                    "type": "boolean",
+                    "title": "显示单根带边界"
+                },
+                "ShowFiberTowMesh": {
+                    "type": "boolean",
+                    "title": "显示单根带Mesh"
+                },
+                "SamplePointsNumPerPath": {
+                    "type": "integer",
+                    "title": "采样点数",
+                    "minimium": 1,
+                    "maximium": 1000,
+                    "singleStep": 1
+                },
+                "FiberLineWidth": {
+                    "type": "number",
+                    "title": "边界线宽度",
+                    "minimium": 1.0,
+                    "maximium": 10.0,
+                    "singleStep": 1.0
+                },
+                "FiberMeshColor1": {
+                    "type": "color",
+                    "title": "预浸带颜色1"
+                },
+                "FiberMeshColor2": {
+                    "type": "color",
+                    "title": "预浸带颜色2"
+                }
+            }
+        },
+        "PlyPlannerParameters": {
+            "title": "铺层规划参数",
+            "type": "object",
+            "properties": {
+                "ShowLabeledPathCommands": {
+                    "title": "显示标签点命令",
+                    "type": "boolean"
+                }
+            }
+        },
+        "GizmoMaxScale": {
+            "title": "三维球最大尺寸",
+            "type": "number",
+            "minimium": 0.01,
+            "maximium": 5.0,
+            "singleStep": 0.1
+        },
+        "Highlight": {
+            "title": "突出显示",
+            "type": "group",
+            "properties": {
+                "SelectedColor": {
+                    "title": "选中颜色",
+                    "type": "color"
+                },
+                "HoveredColor": {
+                    "title": "悬停颜色",
+                    "type": "color"
+                },
+                "AddLineWidth": {
+                    "title": "加粗线宽",
+                    "type": "number"
+                },
+                "AddPointSize": {
+                    "title": "增大点大小",
+                    "type": "number"
+                }
+            }
+        },
+        "EnableSelection": {
+            "type": "boolean",
+            "title": "点选"
+        },
+        "ExportSettings": {
+            "title": "导出设置",
+            "type": "object",
+            "properties": {
+                "PQArtFormat": {
+                    "title": "PQArt格式",
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

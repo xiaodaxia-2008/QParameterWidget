@@ -1,0 +1,2 @@
+add_executable(ExampleParameterWidget ExampleParameterWidget.cpp)
+target_link_libraries(ExampleParameterWidget PRIVATE QParameterWidget)

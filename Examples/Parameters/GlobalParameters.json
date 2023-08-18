@@ -1,0 +1,27 @@
+{
+    "FiberVisual": {
+        "ShowFiberTowCenterLine": false,
+        "ShowFiberCourseCenterLine": false,
+        "ShowFiberTowCenterLineDirection": false,
+        "ShowFiberTowBoundaryLine": true,
+        "ShowFiberTowMesh": true,
+        "SamplePointsNumPerPath": 2,
+        "FiberLineWidth": 2.0,
+        "FiberMeshColor1": "#98d3fd",
+        "FiberMeshColor2": "#fde7a4"
+    },
+    "PlyPlannerParameters": {
+        "ShowLabeledPathCommands": false
+    },
+    "GizmoMaxScale": 2.0,
+    "Highlight": {
+        "SelectedColor": "#26fd00",
+        "HoveredColor": "#fdca3d",
+        "AddLineWidth": 5.0,
+        "AddPointSize": 5.0
+    },
+    "EnableSelection": false,
+    "ExportSettings": {
+        "PQArtFormat": true
+    }
+}
