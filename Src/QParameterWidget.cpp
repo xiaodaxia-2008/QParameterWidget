@@ -28,7 +28,7 @@ QParameterWidget::QParameterWidget(const std::filesystem::path &param_path,
     }
 
     auto model = new QJsonModel(this);
-    model->loadJson(m_param, m_schema);
+    model->LoadJson(m_param, m_schema);
     this->setModel(model);
 
     m_delegate = new ParameterItemDelegate(m_schema, this);
@@ -44,7 +44,7 @@ void QParameterWidget::keyPressEvent(QKeyEvent *event)
         auto fname = QFileDialog::getSaveFileName(this, tr("Save File Name"),
                                                   "", "Json(*.json)");
         if (!fname.isEmpty()) {
-            qobject_cast<QJsonModel *>(model())->saveJson(
+            qobject_cast<QJsonModel *>(model())->SaveJson(
                 std::filesystem::path(fname.toStdString()));
         }
         event->accept();
@@ -58,7 +58,7 @@ void QParameterWidget::keyPressEvent(QKeyEvent *event)
             try {
                 nl::ordered_json jv;
                 f >> jv;
-                qobject_cast<QJsonModel *>(model())->loadJson(jv, m_schema);
+                qobject_cast<QJsonModel *>(model())->LoadJson(jv, m_schema);
             }
             catch (std::exception &e) {
                 SPDLOG_WARN("{}", e.what());

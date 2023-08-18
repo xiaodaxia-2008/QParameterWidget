@@ -20,7 +20,8 @@ struct QJsonTreeItem
                                QJsonTreeItem *parent = nullptr);
     int row() const;
 
-    std::string json_pointer;
+    std::string schema_json_pointer;
+    std::string param_json_pointer;
     QString title;
     QString key;
     QVariant value;
@@ -37,9 +38,10 @@ class QJsonModel : public QAbstractItemModel
 public:
     explicit QJsonModel(QObject *parent = nullptr);
     ~QJsonModel();
-    bool loadJson(const nl::ordered_json &jv, const nl::json &schema);
-    bool saveJson(const std::filesystem::path &fileName) const;
-    nl::ordered_json getJson() const;
+    bool LoadJson(const nl::ordered_json &jv, const nl::json &schema);
+    bool SaveJson(const std::filesystem::path &file_name) const;
+    const nl::ordered_json &GetJson() const;
+
     QVariant data(const QModelIndex &index, int role) const override;
     bool setData(const QModelIndex &index, const QVariant &value,
                  int role = Qt::EditRole) override;
@@ -53,8 +55,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 private:
-    QJsonTreeItem *mRootItem;
-    QStringList mHeaders;
-    nl::ordered_json m_json;
+    QJsonTreeItem *m_root_item;
+    mutable nl::ordered_json m_json;
 };
 } // namespace zen

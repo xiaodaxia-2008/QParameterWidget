@@ -40,7 +40,7 @@ void ParameterItemDelegate::paint(QPainter *painter,
                                   const QModelIndex &index) const
 {
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
-    auto jp = item->json_pointer;
+    auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
     if (item_type == "color" && index.column() == 1) {
         painter->fillRect(option.rect, QColor(item->value.toString()));
@@ -55,7 +55,7 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
                                              const QModelIndex &index) const
 {
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
-    auto jp = item->json_pointer;
+    auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
     if (item_type == "integer") {
         auto editor = new QSpinBox(parent);
@@ -94,7 +94,7 @@ void ParameterItemDelegate::setEditorData(QWidget *editor,
                                           const QModelIndex &index) const
 {
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
-    auto jp = item->json_pointer;
+    auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
     if (item_type == "color") {
         auto color_dialog = qobject_cast<QColorDialog *>(editor);
@@ -110,7 +110,7 @@ void ParameterItemDelegate::setModelData(QWidget *editor,
                                          const QModelIndex &index) const
 {
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
-    auto jp = item->json_pointer;
+    auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
     if (item_type == "color") {
         auto color_dialog = qobject_cast<QColorDialog *>(editor);
