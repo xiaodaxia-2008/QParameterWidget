@@ -4,11 +4,13 @@
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
+#include <memory>
 #include <string>
 
 namespace zen
 {
 namespace nl = nlohmann;
+
 
 struct QJsonTreeItem
 {
@@ -20,6 +22,7 @@ struct QJsonTreeItem
                                QJsonTreeItem *parent = nullptr);
     int row() const;
 
+    QJsonTreeItem *parent;
     std::string schema_json_pointer;
     std::string param_json_pointer;
     QString title;
@@ -27,10 +30,8 @@ struct QJsonTreeItem
     QVariant value;
     nl::ordered_json::value_t type;
     QList<QJsonTreeItem *> children;
-    QJsonTreeItem *parent;
 };
-
-//---------------------------------------------------
+void to_json(nl::ordered_json &j, const QJsonTreeItem &p);
 
 class QJsonModel : public QAbstractItemModel
 {
@@ -38,9 +39,10 @@ class QJsonModel : public QAbstractItemModel
 public:
     explicit QJsonModel(QObject *parent = nullptr);
     ~QJsonModel();
-    bool LoadJson(const nl::ordered_json &jv, const nl::json &schema);
-    bool SaveJson(const std::filesystem::path &file_name) const;
-    const nl::ordered_json &GetJson() const;
+    bool LoadJson(const std::shared_ptr<nl::ordered_json> &param,
+                  const nl::json &schema);
+    const std::shared_ptr<nl::ordered_json> &GetJson() const;
+    const QJsonTreeItem *RootItem() const;
 
     QVariant data(const QModelIndex &index, int role) const override;
     bool setData(const QModelIndex &index, const QVariant &value,
@@ -54,8 +56,12 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
+signals:
+    void SigParameterChanged(const std::string &param_json_pointer,
+                             std::shared_ptr<nl::ordered_json> param);
+
 private:
     QJsonTreeItem *m_root_item;
-    mutable nl::ordered_json m_json;
+    std::shared_ptr<nl::ordered_json> m_param;
 };
 } // namespace zen

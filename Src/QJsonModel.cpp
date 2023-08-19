@@ -8,7 +8,7 @@
 
 namespace zen
 {
-void to_json(nl::ordered_json &j, const QJsonTreeItem &p);
+using ordered_json_pointer = nlohmann::ordered_json::json_pointer;
 
 std::string GetJsonPath(QJsonTreeItem *item)
 {
@@ -97,49 +97,49 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
     return item;
 }
 
-void to_json(nl::ordered_json &obj, const QJsonTreeItem &p)
+nl::ordered_json ConvertToJsonValue(const QJsonTreeItem &p)
 {
     switch (p.type) {
     case nl::ordered_json::value_t::boolean:
-        obj[p.key.toStdString()] = p.value.toBool();
-        break;
+        return p.value.toBool();
     case nl::ordered_json::value_t::number_float:
-        obj[p.key.toStdString()] = p.value.toDouble();
-        break;
+        return p.value.toDouble();
     case nl::ordered_json::value_t::number_integer:
-        obj[p.key.toStdString()] = p.value.toInt();
-        break;
+        return p.value.toInt();
     case nl::ordered_json::value_t::number_unsigned:
-        obj[p.key.toStdString()] = p.value.toUInt();
-        break;
+        return p.value.toUInt();
     case nl::ordered_json::value_t::string:
-        obj[p.key.toStdString()] = p.value.toString().toStdString();
-        break;
+        return p.value.toString().toStdString();
     case nl::ordered_json::value_t::object: {
+        nl::ordered_json jv;
         for (auto child : p.children) {
-            if (p.parent) {
-                to_json(obj[p.key.toStdString()], *child);
-            }
-            else {
-                to_json(obj, *child);
-            }
+            jv[child->key.toStdString()] = ConvertToJsonValue(*child);
         }
-    } break;
+        return jv;
+    }
     case nl::ordered_json::value_t::array: {
-        nl::ordered_json child_json;
+        nl::ordered_json jv;
         for (auto child : p.children) {
-            to_json(child_json, *child);
+            jv.push_back(ConvertToJsonValue(*child));
         }
-        for (auto &[k, v] : child_json.items()) {
-            obj[p.key.toStdString()].push_back(v);
-        }
-    } break;
-    default:
-        break;
+        return jv;
+    }
+    default: {
+        SPDLOG_WARN("ignored type {}", fmt::underlying(p.type));
+        return nl::ordered_json();
+    }
     }
 }
 
-//=========================================================================
+void to_json(nl::ordered_json &obj, const QJsonTreeItem &p)
+{
+    if (p.parent) {
+        obj[p.key.toStdString()] = ConvertToJsonValue(p);
+    }
+    else {
+        obj = ConvertToJsonValue(p);
+    }
+}
 
 QJsonModel::QJsonModel(QObject *parent)
     : QAbstractItemModel(parent), m_root_item{new QJsonTreeItem}
@@ -148,13 +148,16 @@ QJsonModel::QJsonModel(QObject *parent)
 
 QJsonModel::~QJsonModel() { delete m_root_item; }
 
-bool QJsonModel::LoadJson(const nl::ordered_json &jv, const nl::json &schema)
+const QJsonTreeItem *QJsonModel::RootItem() const { return m_root_item; }
+
+bool QJsonModel::LoadJson(const std::shared_ptr<nl::ordered_json> &param,
+                          const nl::json &schema)
 {
-    m_json = jv;
+    m_param = param;
     beginResetModel();
     delete m_root_item;
-    m_root_item = QJsonTreeItem::load(jv, schema);
-    m_root_item->type = jv.type();
+    m_root_item = QJsonTreeItem::load(*m_param, schema);
+    m_root_item->type = m_param->type();
     endResetModel();
     return false;
 }
@@ -184,9 +187,11 @@ bool QJsonModel::setData(const QModelIndex &index, const QVariant &value,
             QJsonTreeItem *item =
                 static_cast<QJsonTreeItem *>(index.internalPointer());
             item->value = value;
-            // TODO: update back to json
-            // m_json.at(item->param_json_pointer) = *item;
+            //  update back to json
+            m_param->at(ordered_json_pointer(item->param_json_pointer)) =
+                ConvertToJsonValue(*item);
             emit dataChanged(index, index, {Qt::EditRole});
+            emit SigParameterChanged(item->param_json_pointer, m_param);
             return true;
         }
     }
@@ -274,19 +279,9 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
     }
 }
 
-const nl::ordered_json &QJsonModel::GetJson() const
+const std::shared_ptr<nl::ordered_json> &QJsonModel::GetJson() const
 {
-    m_json = *m_root_item; //
-    return m_json;
+    return m_param;
 }
 
-bool QJsonModel::SaveJson(const std::filesystem::path &fileName) const
-{
-    std::ofstream f(fileName);
-    if (f) {
-        f << nl::ordered_json(*m_root_item);
-        return true;
-    }
-    return false;
-}
 } // namespace zen

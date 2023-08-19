@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
+#include <memory>
 
 namespace zen
 {
@@ -18,19 +19,24 @@ public:
     QParameterWidget(const std::filesystem::path &param_path,
                      const std::filesystem::path &schema_path,
                      QWidget *parent = nullptr);
+    QParameterWidget(const std::shared_ptr<nl::ordered_json> &param,
+                     const std::filesystem::path &schema_path,
+                     QWidget *parent = nullptr);
     ~QParameterWidget();
 
-    const nl::ordered_json &GetJson() const;
+    std::shared_ptr<nl::ordered_json> GetJson() const;
+    bool SaveJson(const std::filesystem::path &file_name) const;
 
 signals:
-    void SigParameterChanged(const std::string &json_pointer,
-                             const QVariant &val);
+    void SigParameterChanged(const std::string &param_json_pointer,
+                             std::shared_ptr<nl::ordered_json> param);
 
 private:
+    void Init(const std::shared_ptr<nl::ordered_json> &param,
+              const nl::json &schema);
     virtual void keyPressEvent(QKeyEvent *event) override;
 
     QAbstractItemDelegate *m_delegate{nullptr};
     nl::json m_schema;
-    nl::ordered_json m_param;
 };
 } // namespace zen
