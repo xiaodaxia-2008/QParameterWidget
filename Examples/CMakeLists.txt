@@ -1,7 +1,7 @@
 add_executable(ExampleParameterWidget ExampleParameterWidget.cpp)
 target_link_libraries(ExampleParameterWidget PRIVATE QParameterWidget)
 set_target_properties(ExampleParameterWidget PROPERTIES
-    RESOURCE "Data/GlobalParameters.json;Data/GlobalParametersSchema.json")
+    RESOURCE "Data/Parameters.json;Data/ParametersSchema.json")
 
 install(TARGETS ExampleParameterWidget RESOURCE DESTINATION "${CMAKE_INSTALL_BINDIR}/Data")
 

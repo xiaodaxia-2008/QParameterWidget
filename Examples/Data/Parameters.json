@@ -1,0 +1,9 @@
+{
+    "Visual": {
+        "ShowCenterLine": false,
+        "SamplePoints": 2,
+        "LineWidth": 2.0,
+        "MeshColor": "#fde7a4"
+    },
+    "ExportName": "zen"
+}

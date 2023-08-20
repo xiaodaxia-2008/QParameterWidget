@@ -13,12 +13,12 @@ int main(int argc, char **argv)
     using zen::QParameterWidget;
     std::filesystem::path src_dir =
         std::filesystem::path(argv[0]).parent_path();
-    std::ifstream f(src_dir / "Data/GlobalParameters.json");
+    std::ifstream f(src_dir / "Data/Parameters.json");
     auto param = std::make_shared<nlohmann::ordered_json>();
     f >> *param;
 
     QApplication app(argc, argv);
-    QParameterWidget pw(param, src_dir / "Data/GlobalParametersSchema.json");
+    QParameterWidget pw(param, src_dir / "Data/ParametersSchema.json");
     pw.expandAll();
     pw.resizeColumnToContents(0);
 
