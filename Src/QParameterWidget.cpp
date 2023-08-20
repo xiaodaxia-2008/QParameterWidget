@@ -1,6 +1,6 @@
-#include "QParameterWidget.h"
-#include "ParameterItemDelegate.h"
-#include "QJsonModel.h"
+#include <QParameterWidget/ParameterItemDelegate.h>
+#include <QParameterWidget/QJsonModel.h>
+#include <QParameterWidget/QParameterWidget.h>
 
 #include <spdlog/spdlog.h>
 

@@ -1,4 +1,4 @@
-#include <QParameterWidget.h>
+#include <QParameterWidget/QParameterWidget.h>
 
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
@@ -12,14 +12,13 @@ int main(int argc, char **argv)
 {
     using zen::QParameterWidget;
     std::filesystem::path src_dir =
-        std::filesystem::path(__FILE__).parent_path();
-    std::ifstream f(src_dir / "Parameters/GlobalParameters.json");
+        std::filesystem::path(argv[0]).parent_path();
+    std::ifstream f(src_dir / "Data/GlobalParameters.json");
     auto param = std::make_shared<nlohmann::ordered_json>();
     f >> *param;
 
     QApplication app(argc, argv);
-    QParameterWidget pw(param,
-                        src_dir / "Parameters/GlobalParametersSchema.json");
+    QParameterWidget pw(param, src_dir / "Data/GlobalParametersSchema.json");
     pw.expandAll();
     pw.resizeColumnToContents(0);
 
