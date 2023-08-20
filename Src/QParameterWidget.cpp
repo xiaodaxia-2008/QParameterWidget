@@ -102,12 +102,7 @@ void QParameterWidget::keyPressEvent(QKeyEvent *event)
             try {
                 auto jv = std::make_shared<nl::ordered_json>();
                 f >> *jv;
-                if (VerifyJsonSchema(m_schema, *jv)) {
-                    qobject_cast<QJsonModel *>(model())->LoadJson(jv, m_schema);
-                }
-                else {
-                    SPDLOG_ERROR("schema and parameter don't match!");
-                }
+                LoadJson(jv);
             }
             catch (std::exception &e) {
                 SPDLOG_WARN("{}", e.what());
