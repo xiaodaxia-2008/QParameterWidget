@@ -26,6 +26,7 @@ public:
 
     std::shared_ptr<nl::ordered_json> GetJson() const;
     bool SaveJson(const std::filesystem::path &file_name) const;
+    bool LoadJson(std::shared_ptr<nl::ordered_json> param);
 
 signals:
     void SigParameterChanged(const std::string &param_json_pointer,

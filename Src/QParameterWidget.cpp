@@ -73,6 +73,15 @@ bool QParameterWidget::SaveJson(const std::filesystem::path &fileName) const
     return false;
 }
 
+bool QParameterWidget::LoadJson(std::shared_ptr<nl::ordered_json> param)
+{
+    if (!VerifyJsonSchema(m_schema, *param)) {
+        SPDLOG_ERROR("json and schema don't match!");
+        return false;
+    }
+    return qobject_cast<QJsonModel *>(model())->LoadJson(param, m_schema);
+}
+
 void QParameterWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->keyCombination()

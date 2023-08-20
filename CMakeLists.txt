@@ -4,6 +4,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 option(BUILD_SHARED_LIBS "build shared libs" OFF)
+option(BUILD_EXAMPLES "build example" OFF)
 
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "build type, Release/Debug/MinSizeRel/RelWithDebInfo")
 set(CMAKE_CXX_STANDARD 17)
@@ -25,13 +26,13 @@ endif()
 
 if(UNIX)
   find_program(CCACHE_PROGRAM ccache)
+
   if(CCACHE_PROGRAM)
     message(STATUS "Found ccache")
     set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
     set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
   endif()
 endif()
-
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
@@ -40,4 +41,7 @@ find_package(Qt6 CONFIG REQUIRED Widgets)
 include(GNUInstallDirs)
 
 add_subdirectory(Src)
-add_subdirectory(Examples)
+
+if(BUILD_EXAMPLES)
+  add_subdirectory(Examples)
+endif()

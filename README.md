@@ -1,4 +1,6 @@
 # QParameterWidget
+The library uses `nlohmann_json` and `spdlog`, and is inspired by [QJsonModel](https://github.com/dridk/QJsonModel.git) and [pyqtgraph](https://github.com/pyqtgraph/pyqtgraph.git)'s `ParameterTree`.
+
 QParameterWidget provides GUI to modify JSON object. The editor of each value could be customized by an simular json-schema file. Supported types are:
 - integer
 - number
@@ -112,3 +114,15 @@ int main(int argc, char **argv)
 The widget will be like
 
 ![QParameterWidget](Examples/QParameterWidget.png)
+
+# Development Guide
+
+You could integrate the library into you project with cmake `FetchContent`: 
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(QParameterWidget https://github.com/xiaodaxia-2008/QParameterWidget.git GIT_TAG master)
+FetchContent_MakeAvailable(QParameterWidget)
+
+target_link_libraries(target_name PUBLIC QParameterWidget)
+```
