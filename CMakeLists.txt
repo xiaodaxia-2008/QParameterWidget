@@ -36,7 +36,7 @@ endif()
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-find_package(Qt6 CONFIG REQUIRED Widgets)
+find_package(Qt6 CONFIG REQUIRED Widgets UiTools LinguistTools)
 
 include(GNUInstallDirs)
 

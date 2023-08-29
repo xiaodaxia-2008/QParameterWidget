@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <QApplication>
+#include <QTranslator>
 
 #include <filesystem>
 #include <fstream>
@@ -18,6 +19,16 @@ int main(int argc, char **argv)
     f >> *param;
 
     QApplication app(argc, argv);
+    auto dir = QString::fromStdString(
+        (src_dir.parent_path() / "translations").string());
+    spdlog::info("{}", dir.toStdString());
+    auto translator = new QTranslator;
+    if (translator->load(QLocale("zh"), "QParameterWidget", "_", dir, ".qm")) {
+        spdlog::info("load language file {}",
+                     translator->filePath().toStdString());
+        app.installTranslator(translator);
+    }
+
     QParameterWidget pw(param, src_dir / "Data/ParametersSchema.json");
     pw.expandAll();
     pw.resizeColumnToContents(0);

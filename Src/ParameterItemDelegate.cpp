@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <QColorDialog>
+#include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QPainter>
 #include <QSpinBox>
@@ -63,9 +64,11 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
         int maximium = GetProperty<int>(m_schema, jp + "/maximium",
                                         std::numeric_limits<int>::max());
         int step = GetProperty<int>(m_schema, jp + "/singleStep", 1);
+        auto suffix = GetProperty<std::string>(m_schema, jp + "/suffix", "");
         editor->setMinimum(minimium);
         editor->setMaximum(maximium);
         editor->setSingleStep(step);
+        editor->setSuffix(QString::fromStdString(suffix));
         return editor;
     }
     else if (item_type == "number") {
@@ -75,9 +78,20 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
         double maximium = GetProperty<double>(
             m_schema, jp + "/maximium", std::numeric_limits<double>::max());
         double step = GetProperty<double>(m_schema, jp + "/singleStep", 1.0);
+        auto suffix = GetProperty<std::string>(m_schema, jp + "/suffix", "");
         editor->setMinimum(minimium);
         editor->setMaximum(maximium);
         editor->setSingleStep(step);
+        editor->setSuffix(QString::fromStdString(suffix));
+        return editor;
+    }
+    else if (item_type == "enum") {
+        auto editor = new QComboBox(parent);
+        auto items =
+            GetProperty<std::vector<std::string>>(m_schema, jp + "/items", {});
+        for (const auto &item : items) {
+            editor->addItem(QString::fromStdString(item));
+        }
         return editor;
     }
     else if (item_type == "color") {

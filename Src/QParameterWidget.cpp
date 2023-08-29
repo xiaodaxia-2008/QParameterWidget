@@ -58,7 +58,12 @@ void QParameterWidget::Init(const std::shared_ptr<nl::ordered_json> &param,
 
 QParameterWidget::~QParameterWidget() { delete m_delegate; }
 
-std::shared_ptr<nl::ordered_json> QParameterWidget::GetJson() const
+void QParameterWidget::SetHeaders(const QStringList &headers)
+{
+    return qobject_cast<QJsonModel *>(model())->SetHeaders(headers);
+}
+
+const std::shared_ptr<nl::ordered_json> &QParameterWidget::GetJson() const
 {
     return qobject_cast<QJsonModel *>(model())->GetJson();
 }
@@ -73,7 +78,7 @@ bool QParameterWidget::SaveJson(const std::filesystem::path &fileName) const
     return false;
 }
 
-bool QParameterWidget::LoadJson(std::shared_ptr<nl::ordered_json> param)
+bool QParameterWidget::LoadJson(const std::shared_ptr<nl::ordered_json> &param)
 {
     if (!VerifyJsonSchema(m_schema, *param)) {
         SPDLOG_ERROR("json and schema don't match!");

@@ -144,9 +144,12 @@ void to_json(nl::ordered_json &obj, const QJsonTreeItem &p)
 QJsonModel::QJsonModel(QObject *parent)
     : QAbstractItemModel(parent), m_root_item{new QJsonTreeItem}
 {
+    m_headers << tr("Name"), tr("Value");
 }
 
 QJsonModel::~QJsonModel() { delete m_root_item; }
+
+void QJsonModel::SetHeaders(const QStringList &headers) { m_headers = headers; }
 
 const QJsonTreeItem *QJsonModel::RootItem() const { return m_root_item; }
 
@@ -205,10 +208,10 @@ QVariant QJsonModel::headerData(int section, Qt::Orientation orientation,
     if (role != Qt::DisplayRole) return QVariant();
     if (orientation == Qt::Horizontal) {
         if (section == 0) {
-            return tr("Name");
+            return m_headers[0];
         }
         else if (section == 1) {
-            return tr("Value");
+            return m_headers[1];
         }
     }
     return QVariant();

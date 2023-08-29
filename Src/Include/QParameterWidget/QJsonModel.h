@@ -39,6 +39,7 @@ class QJsonModel : public QAbstractItemModel
 public:
     explicit QJsonModel(QObject *parent = nullptr);
     ~QJsonModel();
+    void SetHeaders(const QStringList &headers);
     bool LoadJson(const std::shared_ptr<nl::ordered_json> &param,
                   const nl::json &schema);
     const std::shared_ptr<nl::ordered_json> &GetJson() const;
@@ -63,5 +64,6 @@ signals:
 private:
     QJsonTreeItem *m_root_item;
     std::shared_ptr<nl::ordered_json> m_param;
+    QStringList m_headers;
 };
 } // namespace zen
