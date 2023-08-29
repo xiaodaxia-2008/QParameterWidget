@@ -144,7 +144,7 @@ void to_json(nl::ordered_json &obj, const QJsonTreeItem &p)
 QJsonModel::QJsonModel(QObject *parent)
     : QAbstractItemModel(parent), m_root_item{new QJsonTreeItem}
 {
-    m_headers << tr("Name"), tr("Value");
+    m_headers << tr("Name") << tr("Value");
 }
 
 QJsonModel::~QJsonModel() { delete m_root_item; }
