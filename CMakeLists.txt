@@ -39,6 +39,7 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(Qt6 CONFIG REQUIRED Widgets UiTools LinguistTools)
 
 include(GNUInstallDirs)
+include(GenerateExportHeader)
 
 add_subdirectory(Src)
 

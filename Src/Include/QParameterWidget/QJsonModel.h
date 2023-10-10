@@ -1,5 +1,6 @@
 #pragma once
 #include <QAbstractItemModel>
+#include <qparameterwidget_export.h>
 
 #include <nlohmann/json.hpp>
 
@@ -12,7 +13,7 @@ namespace zen
 namespace nl = nlohmann;
 
 
-struct QJsonTreeItem
+struct QPARAMETERWIDGET_EXPORT QJsonTreeItem
 {
     QJsonTreeItem(QJsonTreeItem *parent = nullptr);
     ~QJsonTreeItem();
@@ -33,7 +34,7 @@ struct QJsonTreeItem
 };
 void to_json(nl::ordered_json &j, const QJsonTreeItem &p);
 
-class QJsonModel : public QAbstractItemModel
+class QPARAMETERWIDGET_EXPORT QJsonModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:

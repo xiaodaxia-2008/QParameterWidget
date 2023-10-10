@@ -1,4 +1,5 @@
 #pragma once
+#include <qparameterwidget_export.h>
 #include <QTreeView>
 
 #include <nlohmann/json.hpp>
@@ -12,7 +13,7 @@ namespace nl = nlohmann;
 
 bool VerifyJsonSchema(const nl::json &schema, const nl::ordered_json &jv);
 
-class QParameterWidget : public QTreeView
+class QPARAMETERWIDGET_EXPORT QParameterWidget : public QTreeView
 {
     Q_OBJECT
 public:
