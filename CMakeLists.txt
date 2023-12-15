@@ -18,6 +18,8 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/out" CACHE PATH "install prefix")
 
 project(QParameterWidget VERSION 0.0.0 DESCRIPTION "Introduction about QParameterWidget")
 
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake)
+
 if(MSVC)
   add_compile_options(/W3)
 else()
@@ -44,9 +46,12 @@ endif()
 
 include(GNUInstallDirs)
 include(GenerateExportHeader)
+include(InstallRequiredSystemLibraries)
 
 add_subdirectory(Src)
 
 if(BUILD_EXAMPLES)
   add_subdirectory(Examples)
 endif()
+
+include(CPack)
