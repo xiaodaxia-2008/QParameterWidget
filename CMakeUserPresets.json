@@ -1,0 +1,38 @@
+{
+    "version": 5,
+    "configurePresets": [
+        {
+            "name": "userBase",
+            "hidden": true,
+            "environment": {
+                "QT_DIR": "D:/Qt/5.15.2/msvc2019_64/",
+                "VCPKG_ROOT_DIR": "D:/AppSource/vcpkg/"
+            }
+        },
+        {
+            "name": "x64-release",
+            "inherits": [
+                "x64-release-base",
+                "userBase"
+            ],
+            "warnings": {
+                "deprecated": false,
+                "dev": false
+            }
+        },
+        {
+            "name": "x64-debug",
+            "inherits": [
+                "x64-debug-base",
+                "userBase"
+            ]
+        },
+        {
+            "name": "x64-relwithdebinfo",
+            "inherits": [
+                "x64-relwithdebinfo-base",
+                "userBase"
+            ]
+        }
+    ]
+}

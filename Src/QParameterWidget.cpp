@@ -89,17 +89,14 @@ bool QParameterWidget::LoadJson(const std::shared_ptr<nl::ordered_json> &param)
 
 void QParameterWidget::keyPressEvent(QKeyEvent *event)
 {
-    if (event->keyCombination()
-        == QKeyCombination(Qt::ControlModifier, Qt::Key_S)) {
+    if (event->matches(QKeySequence::Save)) {
         auto fname = QFileDialog::getSaveFileName(this, tr("Save File Name"),
                                                   "", "Json(*.json)");
         if (!fname.isEmpty()) {
             SaveJson(std::filesystem::path(fname.toStdString()));
         }
         event->accept();
-    }
-    else if (event->keyCombination()
-             == QKeyCombination(Qt::ControlModifier, Qt::Key_O)) {
+    } else if (event->matches(QKeySequence::Open)) {
         auto fname = QFileDialog::getOpenFileName(this, tr("Open File Name"),
                                                   "", "Json(*.json)");
         if (!fname.isEmpty()) {
@@ -108,14 +105,12 @@ void QParameterWidget::keyPressEvent(QKeyEvent *event)
                 auto jv = std::make_shared<nl::ordered_json>();
                 f >> *jv;
                 LoadJson(jv);
-            }
-            catch (std::exception &e) {
+            } catch (std::exception &e) {
                 SPDLOG_WARN("{}", e.what());
             }
         }
         event->accept();
-    }
-    else {
+    } else {
         QTreeView::keyPressEvent(event);
     }
 }

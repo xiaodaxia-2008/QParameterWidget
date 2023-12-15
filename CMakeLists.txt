@@ -36,7 +36,11 @@ endif()
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-find_package(Qt6 CONFIG REQUIRED Widgets UiTools LinguistTools)
+find_package(Qt6 CONFIG COMPONENTS Widgets UiTools LinguistTools)
+
+if(NOT Qt6_FOUND)
+  find_package(Qt5 CONFIG REQUIRED COMPONENTS Widgets LinguistTools)
+endif()
 
 include(GNUInstallDirs)
 include(GenerateExportHeader)
