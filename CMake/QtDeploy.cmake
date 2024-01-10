@@ -14,13 +14,13 @@ macro(qt_deploy)
 
     # the following will install qt runtime dlls to the target's install directory
     if(Qt6_FOUND)
-        qt_generate_deploy_app_script(TARGET ${target_name} FILENAME_VARIABLE deploy_script NO_UNSUPPORTED_PLATFORM_ERROR)
+        qt_generate_deploy_app_script(TARGET ${QT_DEPLOY_TARGET} FILENAME_VARIABLE deploy_script NO_UNSUPPORTED_PLATFORM_ERROR)
         install(SCRIPT ${deploy_script} COMPONENT ${QT_DEPLOY_COMPONENT})
     else()
         install(CODE "
         message(STATUS CMAKE_INSTALL_PREFIX: $<INSTALL_PREFIX>)
         message(STATUS CMAKE_INSTALL_BINDIR: ${CMAKE_INSTALL_BINDIR})
-        set(target_path $<INSTALL_PREFIX>/${CMAKE_INSTALL_BINDIR}/$<TARGET_FILE_NAME:${target_name}>)
+        set(target_path $<INSTALL_PREFIX>/${CMAKE_INSTALL_BINDIR}/$<TARGET_FILE_NAME:${QT_DEPLOY_TARGET}>)
         message(STATUS target_path: \${target_path})
         message(STATUS WINDEPLOYQT_EXECUTABLE: ${WINDEPLOYQT_EXECUTABLE})
         execute_process(COMMAND ${WINDEPLOYQT_EXECUTABLE} --verbose 1 --no-compiler-runtime \${target_path}
