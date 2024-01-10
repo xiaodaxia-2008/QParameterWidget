@@ -1,17 +1,21 @@
-macro(qt_deploy target_name)
-    get_target_property(_moc_executable Qt::moc IMPORTED_LOCATION)
-    cmake_path(GET _moc_executable PARENT_PATH qt_bin_dir)
-    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS ${qt_bin_dir})
+macro(qt_deploy)
+    set(oneValueArgs TARGET COMPONENT)
+    cmake_parse_arguments(QT_DEPLOY "" "${oneValueArgs}" "" ${ARGN})
+
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS ${QT_BINARY_DIR})
     message(STATUS "windeployqt: ${WINDEPLOYQT_EXECUTABLE}")
-    add_custom_command(TARGET ${target_name} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E env PATH="${qt_bin_dir}"
-        "${WINDEPLOYQT_EXECUTABLE}" --verbose 0 --no-compiler-runtime "$<TARGET_FILE:${target_name}>"
+
+    # the following will copy qt rumtime dlls to the target's build directory
+    add_custom_command(TARGET ${QT_DEPLOY_TARGET} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E env PATH="${QT_BINARY_DIR}"
+        "${WINDEPLOYQT_EXECUTABLE}" --verbose 0 --no-compiler-runtime "$<TARGET_FILE:${QT_DEPLOY_TARGET}>"
         COMMENT "Deploying Qt..."
     )
 
+    # the following will install qt runtime dlls to the target's install directory
     if(Qt6_FOUND)
         qt_generate_deploy_app_script(TARGET ${target_name} FILENAME_VARIABLE deploy_script NO_UNSUPPORTED_PLATFORM_ERROR)
-        install(SCRIPT ${deploy_script})
+        install(SCRIPT ${deploy_script} COMPONENT ${QT_DEPLOY_COMPONENT})
     else()
         install(CODE "
         message(STATUS CMAKE_INSTALL_PREFIX: $<INSTALL_PREFIX>)
@@ -22,6 +26,7 @@ macro(qt_deploy target_name)
         execute_process(COMMAND ${WINDEPLOYQT_EXECUTABLE} --verbose 1 --no-compiler-runtime \${target_path}
             )
         "
+            COMPONENT ${QT_DEPLOY_COMPONENT}
         )
     endif()
 endmacro()

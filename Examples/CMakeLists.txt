@@ -14,4 +14,4 @@ install(TARGETS ExampleParameterWidget RESOURCE DESTINATION "${CMAKE_INSTALL_BIN
 install(IMPORTED_RUNTIME_ARTIFACTS spdlog::spdlog fmt::fmt)
 
 include(QtDeploy)
-qt_deploy(ExampleParameterWidget)
+qt_deploy(TARGET ExampleParameterWidget)
