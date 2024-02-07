@@ -8,6 +8,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
 int main(int argc, char **argv)
 {
@@ -29,7 +30,11 @@ int main(int argc, char **argv)
         app.installTranslator(translator);
     }
 
-    QParameterWidget pw(param, src_dir / "Data/ParametersSchema.json");
+    std::cout << QLocale::languageToCode(QLocale("zh").language()).toStdString()
+              << std::endl;
+
+    QParameterWidget pw(param, src_dir / "Data/ParametersSchema.json", nullptr,
+                        QLocale("zh"));
     pw.expandAll();
     pw.resizeColumnToContents(0);
 

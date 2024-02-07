@@ -1,19 +1,19 @@
 {
     "name": "root",
-    "title": "全局参数",
+    "title_zh": "全局参数",
     "type": "object",
     "properties": {
         "Visual": {
-            "title": "显示",
+            "title_zh": "显示",
             "type": "object",
             "properties": {
                 "ShowCenterLine": {
                     "type": "boolean",
-                    "title": "显示中心线"
+                    "title_zh": "显示中心线"
                 },
                 "SamplePoints": {
                     "type": "integer",
-                    "title": "采样点数",
+                    "title_zh": "采样点数",
                     "minimium": 1,
                     "maximium": 1000,
                     "singleStep": 1,
@@ -21,7 +21,7 @@
                 },
                 "LineWidth": {
                     "type": "number",
-                    "title": "线宽",
+                    "title_zh": "线宽",
                     "minimium": 1.0,
                     "maximium": 10.0,
                     "singleStep": 1.0,
@@ -30,12 +30,12 @@
                 },
                 "MeshColor": {
                     "type": "color",
-                    "title": "网格颜色"
+                    "title_zh": "网格颜色"
                 }
             }
         },
         "Cities": {
-            "title": "城市",
+            "title_zh": "城市",
             "type": "enum",
             "items": [
                 "Xi'an",
@@ -43,7 +43,7 @@
             ]
         },
         "ExportName": {
-            "title": "导出名字",
+            "title_zh": "导出名字",
             "type": "string"
         }
     }

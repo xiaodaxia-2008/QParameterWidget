@@ -13,18 +13,19 @@ namespace zen
 {
 QParameterWidget::QParameterWidget(
     const std::shared_ptr<nl::ordered_json> &param,
-    const std::filesystem::path &schema_path, QWidget *parent)
+    const std::filesystem::path &schema_path, QWidget *parent,
+    const QLocale &locale)
     : QTreeView(parent)
 {
     std::ifstream f(schema_path);
     nl::json schema;
     f >> schema;
-    Init(param, schema);
+    Init(param, schema, locale);
 }
 
 QParameterWidget::QParameterWidget(const std::filesystem::path &param_path,
                                    const std::filesystem::path &schema_path,
-                                   QWidget *parent)
+                                   QWidget *parent, const QLocale &locale)
 {
     std::ifstream f1(param_path);
     auto param = std::make_shared<nl::ordered_json>();
@@ -33,11 +34,11 @@ QParameterWidget::QParameterWidget(const std::filesystem::path &param_path,
     std::ifstream f2(schema_path);
     nl::json schema;
     f2 >> schema;
-    Init(param, schema);
+    Init(param, schema, locale);
 }
 
 void QParameterWidget::Init(const std::shared_ptr<nl::ordered_json> &param,
-                            const nl::json &schema)
+                            const nl::json &schema, const QLocale &locale)
 {
     m_schema = schema;
     if (!VerifyJsonSchema(m_schema, *param)) {
@@ -45,7 +46,7 @@ void QParameterWidget::Init(const std::shared_ptr<nl::ordered_json> &param,
         return;
     }
 
-    auto model = new QJsonModel(this);
+    auto model = new QJsonModel(this, locale);
     model->LoadJson(param, m_schema);
     this->setModel(model);
 

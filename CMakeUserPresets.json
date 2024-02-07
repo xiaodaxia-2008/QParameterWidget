@@ -5,7 +5,7 @@
             "name": "userBase",
             "hidden": true,
             "environment": {
-                "QT_DIR": "D:/Qt/5.15.2/msvc2019_64/",
+                "QT_DIR": "D:/Qt/6.4.2/msvc2019_64/",
                 "VCPKG_ROOT_DIR": "D:/AppSource/vcpkg/"
             }
         },

@@ -35,7 +35,8 @@ int QJsonTreeItem::row() const
 QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
                                    const nl::json &schema,
                                    const std::string &key,
-                                   QJsonTreeItem *parent)
+                                   QJsonTreeItem *parent,
+                                   const std::string &lang)
 {
     QJsonTreeItem *item = new QJsonTreeItem(parent);
     item->key = QString::fromStdString(key);
@@ -44,8 +45,7 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
         item->schema_json_pointer =
             parent->schema_json_pointer + "/properties/" + key;
         item->param_json_pointer = parent->param_json_pointer + "/" + key;
-    }
-    else if (!key.empty()) {
+    } else if (!key.empty()) {
         item->schema_json_pointer = "/properties/" + key;
         item->param_json_pointer = "/" + key;
     }
@@ -54,17 +54,20 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
     case nl::ordered_json::value_t::array:
     case nl::ordered_json::value_t::object: {
         for (auto &[k, v] : jv.items()) {
-            QJsonTreeItem *child = load(v, schema, k, item);
+            QJsonTreeItem *child = load(v, schema, k, item, lang);
             try {
-                nl::json::json_pointer jp(child->schema_json_pointer
-                                          + "/title");
-                auto title = schema.at(jp).get<std::string>();
-                child->title = QString::fromStdString(title);
-            }
-            catch (std::exception &e) {
+                if (lang != "en") {
+                    nl::json::json_pointer jp(child->schema_json_pointer
+                                              + "/title_" + lang);
+                    auto title = schema.at(jp).get<std::string>();
+                    child->title = QString::fromStdString(title);
+                } else {
+                    child->title = child->key;
+                }
+            } catch (std::exception &e) {
                 SPDLOG_WARN(
-                    "failed to get item title from {}/title, exception: {}",
-                    child->schema_json_pointer, e.what());
+                    "failed to get item title from {}/title_{}, exception: {}",
+                    child->schema_json_pointer, lang, e.what());
                 child->title = child->key;
             }
             item->children.append(child);
@@ -135,16 +138,21 @@ void to_json(nl::ordered_json &obj, const QJsonTreeItem &p)
 {
     if (p.parent) {
         obj[p.key.toStdString()] = ConvertToJsonValue(p);
-    }
-    else {
+    } else {
         obj = ConvertToJsonValue(p);
     }
 }
 
-QJsonModel::QJsonModel(QObject *parent)
-    : QAbstractItemModel(parent), m_root_item{new QJsonTreeItem}
+QJsonModel::QJsonModel(QObject *parent, const QLocale &locale)
+    : QAbstractItemModel(parent), m_root_item{new QJsonTreeItem},
+      m_locale(locale)
 {
-    m_headers << tr("Name") << tr("Value");
+    if (locale == QLocale("zh"))
+        m_headers << "名字"
+                  << "值";
+    else
+        m_headers << "Name"
+                  << "Value";
 }
 
 QJsonModel::~QJsonModel() { delete m_root_item; }
@@ -156,10 +164,20 @@ const QJsonTreeItem *QJsonModel::RootItem() const { return m_root_item; }
 bool QJsonModel::LoadJson(const std::shared_ptr<nl::ordered_json> &param,
                           const nl::json &schema)
 {
+    std::string lang = "en";
+    auto language = m_locale.language();
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 3, 0))
+    lang = QLocale::languageToCode(language).toStdString();
+#else
+    if (language == QLocale::Chinese
+        || language == QLocale::Language::LiteraryChinese) {
+        lang = "zh";
+    }
+#endif
     m_param = param;
     beginResetModel();
     delete m_root_item;
-    m_root_item = QJsonTreeItem::load(*m_param, schema);
+    m_root_item = QJsonTreeItem::load(*m_param, schema, "", nullptr, lang);
     m_root_item->type = m_param->type();
     endResetModel();
     return false;
@@ -172,8 +190,7 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole) {
         if (index.column() == 0) return QString("%1").arg(item->title);
         if (index.column() == 1) return item->value;
-    }
-    else if (Qt::EditRole == role) {
+    } else if (Qt::EditRole == role) {
         if (index.column() == 1) {
             return item->value;
         }
@@ -209,8 +226,7 @@ QVariant QJsonModel::headerData(int section, Qt::Orientation orientation,
     if (orientation == Qt::Horizontal) {
         if (section == 0) {
             return m_headers[0];
-        }
-        else if (section == 1) {
+        } else if (section == 1) {
             return m_headers[1];
         }
     }
@@ -224,16 +240,14 @@ QModelIndex QJsonModel::index(int row, int column,
     QJsonTreeItem *parentItem;
     if (!parent.isValid()) {
         parentItem = m_root_item;
-    }
-    else {
+    } else {
         parentItem = static_cast<QJsonTreeItem *>(parent.internalPointer());
     }
 
     QJsonTreeItem *childItem = parentItem->children.at(row);
     if (childItem) {
         return createIndex(row, column, childItem);
-    }
-    else {
+    } else {
         return QModelIndex();
     }
 }
@@ -255,8 +269,7 @@ int QJsonModel::rowCount(const QModelIndex &parent) const
     if (parent.column() > 0) return 0;
     if (!parent.isValid()) {
         parentItem = m_root_item;
-    }
-    else {
+    } else {
         parentItem = static_cast<QJsonTreeItem *>(parent.internalPointer());
     }
     return parentItem->children.count();
@@ -276,8 +289,7 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
     auto isObject = nl::ordered_json::value_t::object == item->type;
     if ((col == 1) && !(isArray || isObject)) {
         return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-    }
-    else {
+    } else {
         return QAbstractItemModel::flags(index);
     }
 }
