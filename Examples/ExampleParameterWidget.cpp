@@ -30,9 +30,6 @@ int main(int argc, char **argv)
         app.installTranslator(translator);
     }
 
-    std::cout << QLocale::languageToCode(QLocale("zh").language()).toStdString()
-              << std::endl;
-
     QParameterWidget pw(param, src_dir / "Data/ParametersSchema.json", nullptr,
                         QLocale("zh"));
     pw.expandAll();

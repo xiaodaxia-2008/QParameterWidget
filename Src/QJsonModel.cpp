@@ -1,4 +1,4 @@
-#include <QParameterWidget/QJsonModel.h>
+﻿#include <QParameterWidget/QJsonModel.h>
 
 #include <fmt/std.h>
 #include <spdlog/spdlog.h>
@@ -147,12 +147,13 @@ QJsonModel::QJsonModel(QObject *parent, const QLocale &locale)
     : QAbstractItemModel(parent), m_root_item{new QJsonTreeItem},
       m_locale(locale)
 {
-    if (locale == QLocale("zh"))
-        m_headers << "名字"
-                  << "值";
-    else
+    if (locale == QLocale("zh")) {
+        m_headers << u8"名字"
+                  << u8"值";
+    } else {
         m_headers << "Name"
                   << "Value";
+    }
 }
 
 QJsonModel::~QJsonModel() { delete m_root_item; }
