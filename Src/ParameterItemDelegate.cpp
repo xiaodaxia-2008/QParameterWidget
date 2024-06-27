@@ -17,7 +17,7 @@ namespace zen
 
 template <typename T>
 T GetProperty(const nl::json &schema, const std::string &json_pointer,
-              const T &default_value)
+              const T &default_value = T{})
 {
     try {
         return schema.at(nl::json::json_pointer(json_pointer)).get<T>();
@@ -29,8 +29,9 @@ T GetProperty(const nl::json &schema, const std::string &json_pointer,
 }
 
 ParameterItemDelegate::ParameterItemDelegate(const nl::json &schema,
-                                             QObject *parent)
-    : QStyledItemDelegate(parent), m_schema(schema)
+                                             QObject *parent,
+                                             const QLocale &locale)
+    : QStyledItemDelegate(parent), m_schema(schema), m_locale(locale)
 {
 }
 
@@ -43,6 +44,36 @@ void ParameterItemDelegate::paint(QPainter *painter,
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
     if (item_type == "color" && index.column() == 1) {
         painter->fillRect(option.rect, QColor(item->value.toString()));
+    } else if (item_type == "number" && index.column() == 1) {
+        int decimals = GetProperty<int>(m_schema, jp + "/decimals", 2);
+        auto suffix = QString::fromStdString(
+            GetProperty<std::string>(m_schema, jp + "/suffix"));
+        painter->drawText(option.rect, Qt::AlignLeft | Qt::AlignVCenter,
+                          QString("%1 %2")
+                              .arg(item->value.toDouble(), 6, 'f', decimals)
+                              .arg(suffix));
+    } else if (item_type == "integer" && index.column() == 1) {
+        auto suffix = QString::fromStdString(
+            GetProperty<std::string>(m_schema, jp + "/suffix"));
+        painter->drawText(
+            option.rect, Qt::AlignLeft | Qt::AlignVCenter,
+            QString("%1 %2").arg(item->value.toInt()).arg(suffix));
+    } else if (item_type == "enum" && index.column() == 1) {
+        auto lang = LanguageToCode(m_locale);
+        auto enum_items =
+            m_schema.at(nl::ordered_json::json_pointer(jp + "/items"));
+        for (const auto &enum_item : enum_items) {
+            auto name = enum_item.at("name").get<std::string>();
+            if (name != item->value.toString().toStdString()) {
+                continue;
+            }
+            auto title = name;
+            if (lang != "en" && enum_item.contains("title_" + lang)) {
+                title = enum_item.at("title_" + lang).get<std::string>();
+            }
+            painter->drawText(option.rect, Qt::AlignLeft | Qt::AlignVCenter,
+                              QString("%1").arg(QString::fromStdString(title)));
+        }
     } else {
         QStyledItemDelegate::paint(painter, option, index);
     }
@@ -84,11 +115,17 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
         editor->setDecimals(decimals);
         return editor;
     } else if (item_type == "enum") {
+        auto lang = LanguageToCode(m_locale);
         auto editor = new QComboBox(parent);
-        auto items =
-            GetProperty<std::vector<std::string>>(m_schema, jp + "/items", {});
+        auto items = m_schema.at(nl::ordered_json::json_pointer(jp + "/items"));
         for (const auto &item : items) {
-            editor->addItem(QString::fromStdString(item));
+            auto name = item.at("name").get<std::string>();
+            auto title = name;
+            if (lang != "en" && item.contains("title_" + lang)) {
+                title = item.at("title_" + lang).get<std::string>();
+            }
+            editor->addItem(QString::fromStdString(title),
+                            QString::fromStdString(name));
         }
         return editor;
     } else if (item_type == "color") {
@@ -125,6 +162,9 @@ void ParameterItemDelegate::setModelData(QWidget *editor,
         QString color =
             color_dialog->selectedColor().name(QColor::NameFormat::HexRgb);
         model->setData(index, QVariant::fromValue(color));
+    } else if (item_type == "enum") {
+        auto combox = qobject_cast<QComboBox *>(editor);
+        model->setData(index, combox->currentData());
     } else {
         QStyledItemDelegate::setModelData(editor, model, index);
     }

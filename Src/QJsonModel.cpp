@@ -10,6 +10,22 @@ namespace zen
 {
 using ordered_json_pointer = nlohmann::ordered_json::json_pointer;
 
+
+std::string LanguageToCode(const QLocale &locale)
+{
+    auto language = locale.language();
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 3, 0))
+    return QLocale::languageToCode(language).toStdString();
+#else
+    if (language == QLocale::Chinese
+        || language == QLocale::Language::LiteraryChinese) {
+        QLocale::languageToString(language);
+        return "zh";
+    }
+#endif
+    return "";
+}
+
 std::string GetJsonPath(QJsonTreeItem *item)
 {
     std::string key = item->key.toStdString();
@@ -35,8 +51,7 @@ int QJsonTreeItem::row() const
 QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
                                    const nl::json &schema,
                                    const std::string &key,
-                                   QJsonTreeItem *parent,
-                                   const std::string &lang)
+                                   QJsonTreeItem *parent, const QLocale &locale)
 {
     QJsonTreeItem *item = new QJsonTreeItem(parent);
     item->key = QString::fromStdString(key);
@@ -49,28 +64,29 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
         item->schema_json_pointer = "/properties/" + key;
         item->param_json_pointer = "/" + key;
     }
+    nl::ordered_json::json_pointer jp_hidden(item->schema_json_pointer
+                                             + "/hidden");
+    if (schema.contains(jp_hidden) && schema.at(jp_hidden).get<bool>()) {
+        return nullptr;
+    }
+
+    item->title = item->key;
+    auto lang = LanguageToCode(locale);
+    if (locale != QLocale("en")) {
+        nl::json::json_pointer jp_title(item->schema_json_pointer + "/title_"
+                                        + lang);
+        if (schema.contains(jp_title)) {
+            item->title =
+                QString::fromStdString(schema.at(jp_title).get<std::string>());
+        }
+    }
 
     switch (jv.type()) {
     case nl::ordered_json::value_t::array:
     case nl::ordered_json::value_t::object: {
         for (auto &[k, v] : jv.items()) {
-            QJsonTreeItem *child = load(v, schema, k, item, lang);
-            try {
-                if (lang != "en") {
-                    nl::json::json_pointer jp(child->schema_json_pointer
-                                              + "/title_" + lang);
-                    auto title = schema.at(jp).get<std::string>();
-                    child->title = QString::fromStdString(title);
-                } else {
-                    child->title = child->key;
-                }
-            } catch (std::exception &e) {
-                SPDLOG_WARN(
-                    "failed to get item title from {}/title_{}, exception: {}",
-                    child->schema_json_pointer, lang, e.what());
-                child->title = child->key;
-            }
-            item->children.append(child);
+            QJsonTreeItem *child = load(v, schema, k, item, locale);
+            if (child) item->children.append(child);
         }
     } break;
     case nl::ordered_json::value_t::boolean: {
@@ -148,8 +164,7 @@ QJsonModel::QJsonModel(QObject *parent, const QLocale &locale)
       m_locale(locale)
 {
     if (locale == QLocale("zh")) {
-        m_headers << u8"名字"
-                  << u8"值";
+        m_headers << u8"名字" << u8"值";
     } else {
         m_headers << "Name"
                   << "Value";
@@ -166,19 +181,10 @@ bool QJsonModel::LoadJson(const std::shared_ptr<nl::ordered_json> &param,
                           const nl::json &schema)
 {
     std::string lang = "en";
-    auto language = m_locale.language();
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 3, 0))
-    lang = QLocale::languageToCode(language).toStdString();
-#else
-    if (language == QLocale::Chinese
-        || language == QLocale::Language::LiteraryChinese) {
-        lang = "zh";
-    }
-#endif
     m_param = param;
     beginResetModel();
     delete m_root_item;
-    m_root_item = QJsonTreeItem::load(*m_param, schema, "", nullptr, lang);
+    m_root_item = QJsonTreeItem::load(*m_param, schema, "", nullptr, m_locale);
     m_root_item->type = m_param->type();
     endResetModel();
     return false;

@@ -8,6 +8,7 @@
             "type": "object",
             "properties": {
                 "ShowCenterLine": {
+                    "hidden": true,
                     "type": "boolean",
                     "title_zh": "显示中心线"
                 },
@@ -25,7 +26,7 @@
                     "minimium": 1.0,
                     "maximium": 10.0,
                     "singleStep": 1.0,
-                    "decimals": 2,
+                    "decimals": 4,
                     "suffix": "mm"
                 },
                 "MeshColor": {
@@ -38,8 +39,14 @@
             "title_zh": "城市",
             "type": "enum",
             "items": [
-                "Xi'an",
-                "Baoji"
+                {
+                    "name": "Xi'an",
+                    "title_zh": "西安"
+                },
+                {
+                    "name": "Chang'an",
+                    "title_zh": "长安"
+                }
             ]
         },
         "ExportName": {

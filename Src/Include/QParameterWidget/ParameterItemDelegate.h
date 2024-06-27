@@ -12,7 +12,8 @@ class QPARAMETERWIDGET_EXPORT ParameterItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    ParameterItemDelegate(const nl::json &schema, QObject *parent = nullptr);
+    ParameterItemDelegate(const nl::json &schema, QObject *parent = nullptr,
+                          const QLocale &locale = QLocale());
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
                        const QModelIndex &index) const override;
     virtual QWidget *createEditor(QWidget *parent,
@@ -27,5 +28,6 @@ private:
     void commitAndCloseEditor();
 
     nlohmann::json m_schema;
+    QLocale m_locale;
 };
 } // namespace zen

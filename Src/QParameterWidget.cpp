@@ -50,7 +50,7 @@ void QParameterWidget::Init(const std::shared_ptr<nl::ordered_json> &param,
     model->LoadJson(param, m_schema);
     this->setModel(model);
 
-    m_delegate = new ParameterItemDelegate(m_schema, this);
+    m_delegate = new ParameterItemDelegate(m_schema, this, locale);
     this->setItemDelegate(m_delegate);
 
     connect(model, &QJsonModel::SigParameterChanged, this,

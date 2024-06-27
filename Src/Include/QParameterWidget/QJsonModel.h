@@ -23,6 +23,7 @@ namespace zen
 {
 namespace nl = nlohmann;
 
+std::string LanguageToCode(const QLocale &locale);
 
 struct QPARAMETERWIDGET_EXPORT QJsonTreeItem {
     QJsonTreeItem(QJsonTreeItem *parent = nullptr);
@@ -31,7 +32,7 @@ struct QPARAMETERWIDGET_EXPORT QJsonTreeItem {
                                const nl::json &schema,
                                const std::string &key = "",
                                QJsonTreeItem *parent = nullptr,
-                               const std::string &lang = "en");
+                               const QLocale &locale = QLocale());
     int row() const;
 
     QJsonTreeItem *parent;
