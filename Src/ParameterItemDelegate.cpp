@@ -62,18 +62,19 @@ void ParameterItemDelegate::paint(QPainter *painter,
         auto lang = LanguageToCode(m_locale);
         auto enum_items =
             m_schema.at(nl::ordered_json::json_pointer(jp + "/items"));
+        auto title = item->value.toString();
+        // assuming that there will not be too many enum items
         for (const auto &enum_item : enum_items) {
             auto name = enum_item.at("name").get<std::string>();
-            if (name != item->value.toString().toStdString()) {
-                continue;
+            if (name == item->value.toString().toStdString()) {
+                if (lang != "en" && enum_item.contains("title_" + lang)) {
+                    title = QString::fromStdString(
+                        enum_item.at("title_" + lang).get<std::string>());
+                }
+                break;
             }
-            auto title = name;
-            if (lang != "en" && enum_item.contains("title_" + lang)) {
-                title = enum_item.at("title_" + lang).get<std::string>();
-            }
-            painter->drawText(option.rect, Qt::AlignLeft | Qt::AlignVCenter,
-                              QString("%1").arg(QString::fromStdString(title)));
         }
+        painter->drawText(option.rect, Qt::AlignLeft | Qt::AlignVCenter, title);
     } else {
         QStyledItemDelegate::paint(painter, option, index);
     }
