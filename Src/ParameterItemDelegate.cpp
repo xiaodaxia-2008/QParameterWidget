@@ -50,7 +50,7 @@ void ParameterItemDelegate::paint(QPainter *painter,
             GetProperty<std::string>(m_schema, jp + "/suffix"));
         painter->drawText(option.rect, Qt::AlignLeft | Qt::AlignVCenter,
                           QString("%1 %2")
-                              .arg(item->value.toDouble(), 6, 'f', decimals)
+                              .arg(item->value.toDouble(), 0, 'g', decimals)
                               .arg(suffix));
     } else if (item_type == "integer" && index.column() == 1) {
         auto suffix = QString::fromStdString(
