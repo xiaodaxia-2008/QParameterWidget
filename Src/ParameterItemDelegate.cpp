@@ -89,28 +89,28 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
     if (item_type == "integer") {
         auto editor = new QSpinBox(parent);
-        int minimium = GetProperty<int>(m_schema, jp + "/minimium",
+        int minimum = GetProperty<int>(m_schema, jp + "/minimum",
                                         std::numeric_limits<int>::min());
-        int maximium = GetProperty<int>(m_schema, jp + "/maximium",
+        int maximum = GetProperty<int>(m_schema, jp + "/maximum",
                                         std::numeric_limits<int>::max());
         int step = GetProperty<int>(m_schema, jp + "/singleStep", 1);
         auto suffix = GetProperty<std::string>(m_schema, jp + "/suffix", "");
-        editor->setMinimum(minimium);
-        editor->setMaximum(maximium);
+        editor->setMinimum(minimum);
+        editor->setMaximum(maximum);
         editor->setSingleStep(step);
         editor->setSuffix(QString::fromStdString(suffix));
         return editor;
     } else if (item_type == "number") {
         auto editor = new QDoubleSpinBox(parent);
-        double minimium = GetProperty<double>(
-            m_schema, jp + "/minimium", std::numeric_limits<double>::min());
-        double maximium = GetProperty<double>(
-            m_schema, jp + "/maximium", std::numeric_limits<double>::max());
+        double minimum = GetProperty<double>(
+            m_schema, jp + "/minimum", std::numeric_limits<double>::min());
+        double maximum = GetProperty<double>(
+            m_schema, jp + "/maximum", std::numeric_limits<double>::max());
         double step = GetProperty<double>(m_schema, jp + "/singleStep", 1.0);
         auto suffix = GetProperty<std::string>(m_schema, jp + "/suffix", "");
         auto decimals = GetProperty<int>(m_schema, jp + "/decimals", 6);
-        editor->setMinimum(minimium);
-        editor->setMaximum(maximium);
+        editor->setMinimum(minimum);
+        editor->setMaximum(maximum);
         editor->setSingleStep(step);
         editor->setSuffix(QString::fromStdString(suffix));
         editor->setDecimals(decimals);

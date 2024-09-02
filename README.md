@@ -40,16 +40,16 @@ And JSON-Schema:
                 "SamplePoints": {
                     "type": "integer",
                     "title": "采样点数",
-                    "minimium": 1,
-                    "maximium": 1000,
+                    "minimum": 1,
+                    "maximum": 1000,
                     "singleStep": 1,
                     "suffix": "pts"
                 },
                 "LineWidth": {
                     "type": "number",
                     "title": "线宽",
-                    "minimium": 1.0,
-                    "maximium": 10.0,
+                    "minimum": 1.0,
+                    "maximum": 10.0,
                     "singleStep": 1.0,
                     "suffix": "mm",
                     "decimals": 10
