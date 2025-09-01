@@ -184,7 +184,16 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
         auto editor = new QColorDialog(QColor(item->value.toString()), parent);
         return editor;
     } else {
-        return QStyledItemDelegate::createEditor(parent, option, index);
+        auto editor = QStyledItemDelegate::createEditor(parent, option, index);
+        if (auto spinbox = qobject_cast<QDoubleSpinBox *>(editor)) {
+            spinbox->setDecimals(6);
+            spinbox->setMinimum(std::numeric_limits<double>::lowest());
+            spinbox->setMaximum(std::numeric_limits<double>::max());
+        } else if (auto spinbox = qobject_cast<QSpinBox *>(editor)) {
+            spinbox->setMinimum(std::numeric_limits<int>::lowest());
+            spinbox->setMaximum(std::numeric_limits<int>::max());
+        }
+        return editor;
     }
 }
 
