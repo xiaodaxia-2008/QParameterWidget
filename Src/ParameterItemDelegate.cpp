@@ -185,6 +185,13 @@ void ParameterItemDelegate::setModelData(QWidget *editor,
     }
 }
 
+void ParameterItemDelegate::updateEditorGeometry(
+    QWidget *editor, const QStyleOptionViewItem &option,
+    const QModelIndex &index) const
+{
+    editor->setGeometry(option.rect);
+}
+
 void ParameterItemDelegate::commitAndCloseEditor()
 {
     QWidget *editor = qobject_cast<QWidget *>(sender());
