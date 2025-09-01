@@ -4,10 +4,12 @@
 #include <fmt/std.h>
 #include <spdlog/spdlog.h>
 
+#include <QAbstractItemView>
 #include <QApplication>
 #include <QColorDialog>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QSpinBox>
 
@@ -35,6 +37,19 @@ ParameterItemDelegate::ParameterItemDelegate(const nl::json &schema,
                                              const QLocale &locale)
     : QStyledItemDelegate(parent), m_schema(schema), m_locale(locale)
 {
+}
+
+QRect GetCheckBoxRect(const QStyleOptionViewItem &option)
+{
+    QStyleOptionButton checkBoxOption;
+    checkBoxOption.rect = QApplication::style()->subElementRect(
+        QStyle::SE_CheckBoxIndicator, &option, option.widget);
+
+    int centerX = option.rect.left() + checkBoxOption.rect.width() / 2;
+    int centerY = option.rect.top() + option.rect.height() / 2
+                  - checkBoxOption.rect.height() / 2;
+    checkBoxOption.rect.moveTo(centerX, centerY);
+    return checkBoxOption.rect;
 }
 
 void ParameterItemDelegate::paint(QPainter *painter,
@@ -71,6 +86,27 @@ void ParameterItemDelegate::paint(QPainter *painter,
         auto suffix = QString::fromStdString(
             GetProperty<std::string>(m_schema, jp + "/suffix"));
         opt.text = QString("%1 %2").arg(item->value.toInt()).arg(suffix);
+    } else if (item_type == "boolean" && index.column() == 1) {
+        opt.text.clear();
+        bool checked = item->value.toBool();
+
+        // 准备一个 QStyleOptionButton 来描述复选框
+        QStyleOptionButton checkBoxOption;
+        checkBoxOption.rect = GetCheckBoxRect(opt);
+
+        checkBoxOption.state = QStyle::State_Enabled;
+        if (checked) {
+            checkBoxOption.state |= QStyle::State_On;
+        } else {
+            checkBoxOption.state |= QStyle::State_Off;
+        }
+
+        // 让 style 绘制背景和复选框
+        QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt,
+                                           painter);
+        QApplication::style()->drawControl(QStyle::CE_CheckBox, &checkBoxOption,
+                                           painter);
+        return;
     } else if (item_type == "enum" && index.column() == 1) {
         auto lang = LanguageToCode(m_locale);
         auto enum_items =
@@ -91,6 +127,7 @@ void ParameterItemDelegate::paint(QPainter *painter,
     }
     QStyle *style =
         option.widget ? option.widget->style() : QApplication::style();
+    opt.text.prepend("  ");
     style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, option.widget);
 }
 
@@ -190,6 +227,39 @@ void ParameterItemDelegate::updateEditorGeometry(
     const QModelIndex &index) const
 {
     editor->setGeometry(option.rect);
+}
+
+bool ParameterItemDelegate::editorEvent(QEvent *event,
+                                        QAbstractItemModel *model,
+                                        const QStyleOptionViewItem &option,
+                                        const QModelIndex &index)
+{
+    // 确保是布尔类型并且是第二列
+    auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
+    if (item
+        && GetProperty<std::string>(m_schema,
+                                    item->schema_json_pointer + "/type", "")
+               == "boolean"
+        && index.column() == 1) {
+        // 只处理鼠标释放事件
+        if (event->type() == QEvent::MouseButtonRelease) {
+            // 获取复选框的区域，以便判断点击是否在它上面
+            QStyleOptionButton checkBoxOption;
+            checkBoxOption.rect = GetCheckBoxRect(option);
+
+            // 如果点击位置在复选框的矩形区域内
+            if (checkBoxOption.rect.contains(
+                    static_cast<QMouseEvent *>(event)->pos())) {
+                // 切换模型中的值
+                bool currentValue = model->data(index).toBool();
+                model->setData(index, !currentValue);
+                return true; // 事件已处理
+            }
+        }
+    }
+
+    // 对于其他所有情况，调用基类的默认实现
+    return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
 void ParameterItemDelegate::commitAndCloseEditor()

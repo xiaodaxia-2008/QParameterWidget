@@ -201,6 +201,10 @@ QVariant QJsonModel::data(const QModelIndex &index, int role) const
         if (index.column() == 1) {
             return item->value;
         }
+    } else if (role == Qt::TextAlignmentRole) {
+        if (index.column() == 1) {
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+        }
     }
     return QVariant();
 }
@@ -294,11 +298,14 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto isArray = nl::ordered_json::value_t::array == item->type;
     auto isObject = nl::ordered_json::value_t::object == item->type;
-    if ((col == 1) && !(isArray || isObject)) {
-        return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-    } else {
-        return QAbstractItemModel::flags(index);
+    auto isBoolean = nl::ordered_json::value_t::boolean == item->type;
+
+    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
+    if ((col == 1) && !(isArray || isObject || isBoolean)) {
+        flags |= Qt::ItemIsEditable;
     }
+
+    return flags;
 }
 
 const std::shared_ptr<nl::ordered_json> &QJsonModel::GetJson() const

@@ -8,7 +8,7 @@
             "type": "object",
             "properties": {
                 "ShowCenterLine": {
-                    "hidden": true,
+                    "hidden": false,
                     "type": "boolean",
                     "title_zh": "显示中心线"
                 },
