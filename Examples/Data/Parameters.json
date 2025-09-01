@@ -6,5 +6,7 @@
         "MeshColor": "#fde7a4"
     },
     "Cities": "Xi'an",
-    "ExportName": "zen"
+    "ExportName": "zen",
+    "Sample": 1,
+    "Width": 2.0
 }

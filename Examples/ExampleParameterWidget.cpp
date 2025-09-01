@@ -12,6 +12,7 @@
 
 int main(int argc, char **argv)
 {
+    spdlog::set_level(spdlog::level::debug);
     using zen::QParameterWidget;
     std::filesystem::path src_dir =
         std::filesystem::path(argv[0]).parent_path();

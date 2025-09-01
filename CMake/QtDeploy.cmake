@@ -14,7 +14,9 @@ macro(qt_deploy)
 
     # the following will install qt runtime dlls to the target's install directory
     if(Qt6_FOUND)
-        qt_generate_deploy_app_script(TARGET ${QT_DEPLOY_TARGET} FILENAME_VARIABLE deploy_script NO_UNSUPPORTED_PLATFORM_ERROR)
+        qt_generate_deploy_app_script(TARGET ${QT_DEPLOY_TARGET}
+            OUTPUT_SCRIPT deploy_script
+            NO_UNSUPPORTED_PLATFORM_ERROR)
         install(SCRIPT ${deploy_script} COMPONENT ${QT_DEPLOY_COMPONENT})
     else()
         install(CODE "

@@ -4,6 +4,7 @@
 #include <fmt/std.h>
 #include <spdlog/spdlog.h>
 
+#include <QApplication>
 #include <QColorDialog>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -22,8 +23,9 @@ T GetProperty(const nl::json &schema, const std::string &json_pointer,
     try {
         return schema.at(nl::json::json_pointer(json_pointer)).get<T>();
     } catch (std::exception &e) {
-        SPDLOG_WARN("failed to get property from {}, exception: {}",
-                    json_pointer, e.what());
+        (void)e;
+        SPDLOG_DEBUG("failed to get property from {}, exception: {}",
+                     json_pointer, e.what());
         return default_value;
     }
 }
@@ -39,25 +41,36 @@ void ParameterItemDelegate::paint(QPainter *painter,
                                   const QStyleOptionViewItem &option,
                                   const QModelIndex &index) const
 {
+    QStyleOptionViewItem opt = option;
+    initStyleOption(&opt, index);
+
+    if (opt.state & QStyle::State_Editing) {
+        return;
+    }
+
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
     if (item_type == "color" && index.column() == 1) {
+        opt.text = "";
+        QStyledItemDelegate::paint(painter, opt, index);
+        // inset a little for padding
+        QRect colorRect = opt.rect.adjusted(2, 2, -2, -2);
         painter->fillRect(option.rect, QColor(item->value.toString()));
-    } else if (item_type == "number" && index.column() == 1) {
+        return;
+    }
+
+    if (item_type == "number" && index.column() == 1) {
         int decimals = GetProperty<int>(m_schema, jp + "/decimals", 2);
         auto suffix = QString::fromStdString(
             GetProperty<std::string>(m_schema, jp + "/suffix"));
-        painter->drawText(option.rect, Qt::AlignLeft | Qt::AlignVCenter,
-                          QString("%1 %2")
-                              .arg(item->value.toDouble(), 0, 'g', decimals)
-                              .arg(suffix));
+        opt.text = QString("%1 %2")
+                       .arg(item->value.toDouble(), 0, 'g', decimals)
+                       .arg(suffix);
     } else if (item_type == "integer" && index.column() == 1) {
         auto suffix = QString::fromStdString(
             GetProperty<std::string>(m_schema, jp + "/suffix"));
-        painter->drawText(
-            option.rect, Qt::AlignLeft | Qt::AlignVCenter,
-            QString("%1 %2").arg(item->value.toInt()).arg(suffix));
+        opt.text = QString("%1 %2").arg(item->value.toInt()).arg(suffix);
     } else if (item_type == "enum" && index.column() == 1) {
         auto lang = LanguageToCode(m_locale);
         auto enum_items =
@@ -74,10 +87,11 @@ void ParameterItemDelegate::paint(QPainter *painter,
                 break;
             }
         }
-        painter->drawText(option.rect, Qt::AlignLeft | Qt::AlignVCenter, title);
-    } else {
-        QStyledItemDelegate::paint(painter, option, index);
+        opt.text = title;
     }
+    QStyle *style =
+        option.widget ? option.widget->style() : QApplication::style();
+    style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, option.widget);
 }
 
 QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
@@ -90,9 +104,9 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
     if (item_type == "integer") {
         auto editor = new QSpinBox(parent);
         int minimum = GetProperty<int>(m_schema, jp + "/minimum",
-                                        std::numeric_limits<int>::min());
+                                       std::numeric_limits<int>::min());
         int maximum = GetProperty<int>(m_schema, jp + "/maximum",
-                                        std::numeric_limits<int>::max());
+                                       std::numeric_limits<int>::max());
         int step = GetProperty<int>(m_schema, jp + "/singleStep", 1);
         auto suffix = GetProperty<std::string>(m_schema, jp + "/suffix", "");
         editor->setMinimum(minimum);
