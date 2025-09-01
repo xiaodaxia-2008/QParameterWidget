@@ -127,7 +127,6 @@ void ParameterItemDelegate::paint(QPainter *painter,
     }
     QStyle *style =
         option.widget ? option.widget->style() : QApplication::style();
-    opt.text.prepend("  ");
     style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, option.widget);
 }
 
