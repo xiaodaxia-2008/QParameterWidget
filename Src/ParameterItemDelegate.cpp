@@ -242,31 +242,24 @@ bool ParameterItemDelegate::editorEvent(QEvent *event,
                                         const QStyleOptionViewItem &option,
                                         const QModelIndex &index)
 {
-    // 确保是布尔类型并且是第二列
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     if (item
         && GetProperty<std::string>(m_schema,
                                     item->schema_json_pointer + "/type", "")
                == "boolean"
         && index.column() == 1) {
-        // 只处理鼠标释放事件
         if (event->type() == QEvent::MouseButtonRelease) {
-            // 获取复选框的区域，以便判断点击是否在它上面
             QStyleOptionButton checkBoxOption;
             checkBoxOption.rect = GetCheckBoxRect(option);
-
-            // 如果点击位置在复选框的矩形区域内
             if (checkBoxOption.rect.contains(
                     static_cast<QMouseEvent *>(event)->pos())) {
-                // 切换模型中的值
                 bool currentValue = model->data(index).toBool();
                 model->setData(index, !currentValue);
-                return true; // 事件已处理
+                return true;
             }
         }
     }
 
-    // 对于其他所有情况，调用基类的默认实现
     return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 

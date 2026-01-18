@@ -64,6 +64,11 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
         item->schema_json_pointer = "/properties/" + key;
         item->param_json_pointer = "/" + key;
     }
+
+    if (!schema.contains(nl::json::json_pointer{item->schema_json_pointer})) {
+        return nullptr;
+    }
+
     nl::ordered_json::json_pointer jp_hidden(item->schema_json_pointer
                                              + "/hidden");
     if (schema.contains(jp_hidden) && schema.at(jp_hidden).get<bool>()) {

@@ -7,8 +7,7 @@ macro(qt_deploy)
 
     # the following will copy qt rumtime dlls to the target's build directory
     add_custom_command(TARGET ${QT_DEPLOY_TARGET} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E env PATH="${QT_BINARY_DIR}"
-        "${WINDEPLOYQT_EXECUTABLE}" --verbose 0 --no-compiler-runtime "$<TARGET_FILE:${QT_DEPLOY_TARGET}>"
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}" --verbose 0 --no-compiler-runtime "$<TARGET_FILE:${QT_DEPLOY_TARGET}>"
         COMMENT "Deploying Qt..."
     )
 
