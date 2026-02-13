@@ -9,5 +9,11 @@
     "ExportName": "zen",
     "Sample": 1,
     "Width": 2.0,
-    "Height": 3.0
+    "Height": 3.0,
+    "Filepath": "C:/Users/xiaoz/Desktop/file.json",
+    "Array": [
+        1,
+        2,
+        3
+    ]
 }

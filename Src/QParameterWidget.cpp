@@ -2,6 +2,7 @@
 #include <QParameterWidget/QJsonModel.h>
 #include <QParameterWidget/QParameterWidget.h>
 
+#include <nlohmann/json_fwd.hpp>
 #include <spdlog/spdlog.h>
 
 #include <QFileDialog>
@@ -26,6 +27,7 @@ QParameterWidget::QParameterWidget(
 QParameterWidget::QParameterWidget(const std::filesystem::path &param_path,
                                    const std::filesystem::path &schema_path,
                                    QWidget *parent, const QLocale &locale)
+    : QTreeView(parent)
 {
     std::ifstream f1(param_path);
     auto param = std::make_shared<nl::ordered_json>();
@@ -35,6 +37,14 @@ QParameterWidget::QParameterWidget(const std::filesystem::path &param_path,
     nl::json schema;
     f2 >> schema;
     Init(param, schema, locale);
+}
+
+QParameterWidget::QParameterWidget(
+    const std::shared_ptr<nl::ordered_json> &param, QWidget *parent,
+    const QLocale &locale)
+    : QTreeView(parent)
+{
+    Init(param, nl::json{}, locale);
 }
 
 void QParameterWidget::Init(const std::shared_ptr<nl::ordered_json> &param,

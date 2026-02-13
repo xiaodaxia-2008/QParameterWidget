@@ -31,8 +31,11 @@ int main(int argc, char **argv)
         app.installTranslator(translator);
     }
 
-    QParameterWidget pw(param, src_dir / "Data/ParametersSchema.json", nullptr,
-                        QLocale("zh"));
+    // QParameterWidget pw(param, src_dir / "Data/ParametersSchema.json",
+    // nullptr,
+    //                     QLocale("zh"));
+    
+    QParameterWidget pw(param, nullptr, QLocale("zh"));
     pw.expandAll();
     pw.resizeColumnToContents(0);
 
@@ -45,6 +48,7 @@ int main(int argc, char **argv)
                 jv->at(nlohmann::ordered_json::json_pointer(json_pointer))
                     .dump());
         });
+
     pw.show();
     app.exec();
 

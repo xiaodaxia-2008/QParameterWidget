@@ -1,0 +1,50 @@
+CompileFlags:
+  Add: -ferror-limit=0
+#   Add: /std:c++23
+#   Compiler: clang-cl
+
+# ---
+
+# If:
+#   PathMatch: .*\.h
+# CompileFlags:
+#   Add: [/std:c++20]
+#   # Add: [/std:c++2b]
+#   # Compiler: clang
+#
+# ---
+
+Index:
+  Background: Build
+  StandardLibrary: true
+
+Style:
+  QuotedHeaders: "Src/.*"
+  AngledHeaders: ["FiberArt/.*"]
+
+Diagnostics:
+  Suppress: "*"
+  UnusedIncludes: None
+  MissingIncludes: None
+
+# https://clangd.llvm.org/config#completion
+Completion:
+  AllScopes: No
+  ArgumentLists: Delimiters
+  HeaderInsertion: Never
+
+# https://clangd.llvm.org/config#inlayhints
+InlayHints:
+  BlockEnd: true
+  Designators: true
+  Enabled: true
+  ParameterNames: false
+  DeducedTypes: false
+  DefaultArguments: false
+  TypeNameLimit: 24
+
+Hover:
+  ShowAKA: true
+
+Documentation:
+  CommentFormat: Doxygen

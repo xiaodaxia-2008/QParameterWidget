@@ -52,6 +52,9 @@
         "ExportName": {
             "title_zh": "导出名字",
             "type": "string"
+        },
+        "Array": {
+            "title_zh": "数组"
         }
     }
 }

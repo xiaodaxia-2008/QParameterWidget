@@ -3,9 +3,6 @@
 #include <fmt/std.h>
 #include <spdlog/spdlog.h>
 
-#include <filesystem>
-#include <fstream>
-
 namespace zen
 {
 using ordered_json_pointer = nlohmann::ordered_json::json_pointer;
@@ -66,7 +63,8 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
     }
 
     if (!schema.contains(nl::json::json_pointer{item->schema_json_pointer})) {
-        return nullptr;
+        SPDLOG_WARN("there is no schema for {}", item->schema_json_pointer);
+        // return nullptr;
     }
 
     nl::ordered_json::json_pointer jp_hidden(item->schema_json_pointer
@@ -90,8 +88,13 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
     case nl::ordered_json::value_t::array:
     case nl::ordered_json::value_t::object: {
         for (auto &[k, v] : jv.items()) {
+            SPDLOG_INFO("load key: {}, v: {}", k, v.dump());
             QJsonTreeItem *child = load(v, schema, k, item, locale);
-            if (child) item->children.append(child);
+            if (child) {
+                item->children.append(child);
+            } else {
+                SPDLOG_WARN("failed to construct QJsonTreeItem for {}", k);
+            }
         }
     } break;
     case nl::ordered_json::value_t::boolean: {

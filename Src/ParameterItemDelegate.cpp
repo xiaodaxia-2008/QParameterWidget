@@ -2,6 +2,11 @@
 #include <QParameterWidget/QJsonModel.h>
 
 #include <fmt/std.h>
+#include <nlohmann/json_fwd.hpp>
+#include <qbrush.h>
+#include <qcolor.h>
+#include <qpoint.h>
+#include <qstyleditemdelegate.h>
 #include <spdlog/spdlog.h>
 
 #include <QAbstractItemView>
@@ -9,11 +14,11 @@
 #include <QColorDialog>
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QFileDialog>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QSpinBox>
-
-#include <fstream>
+#include <string>
 
 namespace zen
 {
@@ -30,6 +35,47 @@ T GetProperty(const nl::json &schema, const std::string &json_pointer,
                      json_pointer, e.what());
         return default_value;
     }
+}
+
+bool IsFilepath(const QJsonTreeItem *item, const nl::json &schema)
+{
+    if (GetProperty<std::string>(schema, item->schema_json_pointer + "/type")
+        == "filepath") {
+        return true;
+    }
+
+    if (item->type != nl::json::value_t::string) {
+        return false;
+    }
+
+    QString str = item->value.toString();
+    QFileInfo file(str);
+    if (file.exists()) {
+        return true;
+    }
+
+    if (str.contains('/') || str.contains('\\')) {
+
+        if (file.absoluteDir().exists()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool IsColorType(const QJsonTreeItem *item, const nl::json &schema)
+{
+    if (GetProperty<std::string>(schema, item->schema_json_pointer + "/type")
+        == "color") {
+        return true;
+    }
+
+    if (item->type == nl::json::value_t::string) {
+        return QColor(item->value.toString()).isValid();
+    }
+
+    return false;
 }
 
 ParameterItemDelegate::ParameterItemDelegate(const nl::json &schema,
@@ -56,6 +102,11 @@ void ParameterItemDelegate::paint(QPainter *painter,
                                   const QStyleOptionViewItem &option,
                                   const QModelIndex &index) const
 {
+    if (index.column() == 0) {
+        QStyledItemDelegate::paint(painter, option, index);
+        return;
+    }
+
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
@@ -66,27 +117,48 @@ void ParameterItemDelegate::paint(QPainter *painter,
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
-    if (item_type == "color" && index.column() == 1) {
-        opt.text = "";
-        QStyledItemDelegate::paint(painter, opt, index);
-        // inset a little for padding
-        QRect colorRect = opt.rect.adjusted(2, 2, -2, -2);
-        painter->fillRect(option.rect, QColor(item->value.toString()));
+    using value_t = nl::ordered_json::value_t;
+    if (IsColorType(item, m_schema)) {
+        // 1. Draw the standard selection/hover background first
+        QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt,
+                                           painter);
+
+        QString colorStr = item->value.toString();
+        QColor bgColor(colorStr);
+
+        // 2. Fill the cell with the item's color
+        // We adjust the rect slightly to not overlap the grid lines if they
+        // exist
+        QRect colorRect = opt.rect.adjusted(1, 1, -1, -1);
+        painter->fillRect(colorRect, bgColor);
+
+        // 3. Determine "Contrast Color" (Black or White)
+        // Formula: (R * 299 + G * 587 + B * 114) / 1000
+        // Or use Qt's built-in luminance check:
+        QColor textColor = (bgColor.lightness() > 128) ? Qt::black : Qt::white;
+
+        // 4. Draw the text centered
+        painter->setPen(textColor);
+        // Use the option's font (it handles bold/italic state changes)
+        painter->setFont(opt.font);
+        painter->drawText(colorRect, Qt::AlignLeft, colorStr);
+
         return;
     }
 
-    if (item_type == "number" && index.column() == 1) {
+    if (item->type == value_t::number_float) {
         int decimals = GetProperty<int>(m_schema, jp + "/decimals", 2);
         auto suffix = QString::fromStdString(
             GetProperty<std::string>(m_schema, jp + "/suffix"));
         opt.text = QString("%1 %2")
                        .arg(item->value.toDouble(), 0, 'g', decimals)
                        .arg(suffix);
-    } else if (item_type == "integer" && index.column() == 1) {
+    } else if (item->type == value_t::number_integer
+               || item->type == value_t::number_unsigned) {
         auto suffix = QString::fromStdString(
             GetProperty<std::string>(m_schema, jp + "/suffix"));
         opt.text = QString("%1 %2").arg(item->value.toInt()).arg(suffix);
-    } else if (item_type == "boolean" && index.column() == 1) {
+    } else if (item->type == value_t::boolean) {
         opt.text.clear();
         bool checked = item->value.toBool();
 
@@ -107,7 +179,7 @@ void ParameterItemDelegate::paint(QPainter *painter,
         QApplication::style()->drawControl(QStyle::CE_CheckBox, &checkBoxOption,
                                            painter);
         return;
-    } else if (item_type == "enum" && index.column() == 1) {
+    } else if (item_type == "enum") {
         auto lang = LanguageToCode(m_locale);
         auto enum_items =
             m_schema.at(nl::ordered_json::json_pointer(jp + "/items"));
@@ -137,7 +209,9 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
-    if (item_type == "integer") {
+    using value_t = nl::ordered_json::value_t;
+    if (item->type == value_t::number_integer
+        || item->type == value_t::number_unsigned) {
         auto editor = new QSpinBox(parent);
         int minimum = GetProperty<int>(m_schema, jp + "/minimum",
                                        std::numeric_limits<int>::min());
@@ -150,7 +224,7 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
         editor->setSingleStep(step);
         editor->setSuffix(QString::fromStdString(suffix));
         return editor;
-    } else if (item_type == "number") {
+    } else if (item->type == value_t::number_float) {
         auto editor = new QDoubleSpinBox(parent);
         double minimum = GetProperty<double>(
             m_schema, jp + "/minimum", std::numeric_limits<double>::min());
@@ -179,15 +253,25 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
                             QString::fromStdString(name));
         }
         return editor;
-    } else if (item_type == "color") {
+    } else if (IsColorType(item, m_schema)) {
         auto editor = new QColorDialog(QColor(item->value.toString()), parent);
         return editor;
+    } else if (IsFilepath(item, m_schema)) {
+        auto editor =
+            new QFileDialog(parent, "File Select", item->value.toString());
+        editor->setAcceptMode(QFileDialog::AcceptSave);
+        editor->setFileMode(QFileDialog::AnyFile);
+        editor->setMinimumSize(QSize(600, 400));
+        return editor;
     } else {
+        // default editor is used when there is no schema specified for this
+        // item
         auto editor = QStyledItemDelegate::createEditor(parent, option, index);
         if (auto spinbox = qobject_cast<QDoubleSpinBox *>(editor)) {
-            spinbox->setDecimals(6);
+            spinbox->setDecimals(4);
             spinbox->setMinimum(std::numeric_limits<double>::lowest());
             spinbox->setMaximum(std::numeric_limits<double>::max());
+            spinbox->setSingleStep(0.1);
         } else if (auto spinbox = qobject_cast<QSpinBox *>(editor)) {
             spinbox->setMinimum(std::numeric_limits<int>::lowest());
             spinbox->setMaximum(std::numeric_limits<int>::max());
@@ -200,11 +284,12 @@ void ParameterItemDelegate::setEditorData(QWidget *editor,
                                           const QModelIndex &index) const
 {
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
-    auto jp = item->schema_json_pointer;
-    auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
-    if (item_type == "color") {
+    if (IsColorType(item, m_schema)) {
         auto color_dialog = qobject_cast<QColorDialog *>(editor);
         color_dialog->setCurrentColor(QColor(item->value.toString()));
+    } else if (IsFilepath(item, m_schema)) {
+        auto file_dialog = qobject_cast<QFileDialog *>(editor);
+        file_dialog->selectFile(item->value.toString());
     } else {
         QStyledItemDelegate::setEditorData(editor, index);
     }
@@ -217,11 +302,24 @@ void ParameterItemDelegate::setModelData(QWidget *editor,
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
-    if (item_type == "color") {
+    try {
+        SPDLOG_INFO("value: {}", item->value.toString().toStdString());
+    } catch (...) {
+    }
+    if (IsColorType(item, m_schema)) {
         auto color_dialog = qobject_cast<QColorDialog *>(editor);
-        QString color =
-            color_dialog->selectedColor().name(QColor::NameFormat::HexRgb);
-        model->setData(index, QVariant::fromValue(color));
+        QColor color = color_dialog->selectedColor();
+        if (color.isValid()) {
+            QString color_str = color.name(QColor::NameFormat::HexRgb);
+            model->setData(index, QVariant::fromValue(color_str));
+        }
+    } else if (IsFilepath(item, m_schema)) {
+        auto file_dialog = qobject_cast<QFileDialog *>(editor);
+        if (file_dialog->acceptMode() == QDialog::Accepted) {
+            QString file = file_dialog->selectedFiles().first();
+            SPDLOG_INFO("file: {}", file.toStdString());
+            model->setData(index, file);
+        }
     } else if (item_type == "enum") {
         auto combox = qobject_cast<QComboBox *>(editor);
         model->setData(index, combox->currentData());
@@ -242,12 +340,9 @@ bool ParameterItemDelegate::editorEvent(QEvent *event,
                                         const QStyleOptionViewItem &option,
                                         const QModelIndex &index)
 {
+    using value_t = nl::ordered_json::value_t;
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
-    if (item
-        && GetProperty<std::string>(m_schema,
-                                    item->schema_json_pointer + "/type", "")
-               == "boolean"
-        && index.column() == 1) {
+    if (item && item->type == value_t::boolean && index.column() == 1) {
         if (event->type() == QEvent::MouseButtonRelease) {
             QStyleOptionButton checkBoxOption;
             checkBoxOption.rect = GetCheckBoxRect(option);
