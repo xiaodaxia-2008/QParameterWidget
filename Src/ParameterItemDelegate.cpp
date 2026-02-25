@@ -129,7 +129,7 @@ void ParameterItemDelegate::paint(QPainter *painter,
         // 2. Fill the cell with the item's color
         // We adjust the rect slightly to not overlap the grid lines if they
         // exist
-        QRect colorRect = opt.rect.adjusted(4, 2, -4, -2);
+        QRect colorRect = opt.rect.adjusted(2, 2, -2, -2);
         painter->fillRect(colorRect, bgColor);
 
         // 3. Determine "Contrast Color" (Black or White)
@@ -141,8 +141,8 @@ void ParameterItemDelegate::paint(QPainter *painter,
         painter->setPen(textColor);
         // Use the option's font (it handles bold/italic state changes)
         painter->setFont(opt.font);
-        painter->drawText(colorRect, Qt::AlignVCenter | Qt::AlignLeft,
-                          colorStr);
+        painter->drawText(opt.rect.adjusted(4, 0, -4, 0),
+                          Qt::AlignVCenter | Qt::AlignLeft, colorStr);
 
         return;
     }
