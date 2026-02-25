@@ -91,6 +91,12 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
         }
     }
 
+    auto jp_read_only =
+        nl::json::json_pointer(item->schema_json_pointer + "/read_only");
+    if (schema.contains(jp_read_only)) {
+        item->read_only = schema[jp_read_only].get<bool>();
+    }
+
     switch (jv.type()) {
     case nl::ordered_json::value_t::array:
     case nl::ordered_json::value_t::object: {
@@ -315,9 +321,13 @@ Qt::ItemFlags QJsonModel::flags(const QModelIndex &index) const
     auto isBoolean = nl::ordered_json::value_t::boolean == item->type;
 
     Qt::ItemFlags flags = QAbstractItemModel::flags(index);
-    if ((col == 1) && !(isArray || isObject || isBoolean)) {
-        flags |= Qt::ItemIsEditable;
+    if (col == 1) {
+        flags.setFlag(Qt::ItemIsEditable, !item->read_only);
     }
+
+    // if ((col == 1) && !(isArray || isObject || isBoolean)) {
+    //     flags |= Qt::ItemIsEditable;
+    // }
 
     return flags;
 }

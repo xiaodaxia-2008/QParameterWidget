@@ -26,12 +26,15 @@ std::string LanguageToCode(const QLocale &locale);
 
 struct QPARAMETERWIDGET_EXPORT QJsonTreeItem {
     QJsonTreeItem(QJsonTreeItem *parent = nullptr);
+
     ~QJsonTreeItem();
+
     static QJsonTreeItem *load(const nl::ordered_json &obj,
                                const nl::json &schema,
                                const std::string &key = "",
                                QJsonTreeItem *parent = nullptr,
                                const QLocale &locale = QLocale());
+
     int row() const;
 
     QJsonTreeItem *parent;
@@ -40,6 +43,7 @@ struct QPARAMETERWIDGET_EXPORT QJsonTreeItem {
     QString title;
     QString key;
     QVariant value;
+    bool read_only = false;
     nl::ordered_json::value_t type;
     QList<QJsonTreeItem *> children;
 };

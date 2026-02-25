@@ -379,7 +379,7 @@ bool ParameterItemDelegate::editorEvent(QEvent *event,
 {
     using value_t = nl::ordered_json::value_t;
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
-    if (item && item->type == value_t::boolean && index.column() == 1) {
+    if (item && item->type == value_t::boolean && index.column() == 1 && !item->read_only) {
         if (event->type() == QEvent::MouseButtonRelease) {
             QStyleOptionButton checkBoxOption;
             checkBoxOption.rect = GetCheckBoxRect(option);

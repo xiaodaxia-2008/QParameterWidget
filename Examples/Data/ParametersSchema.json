@@ -10,11 +10,13 @@
                 "ShowCenterLine": {
                     "hidden": false,
                     "type": "boolean",
+                    "read_only": true,
                     "title_zh": "显示中心线"
                 },
                 "SamplePoints": {
                     "type": "integer",
                     "title_zh": "采样点数",
+                    "read_only": true,
                     "minimum": 1,
                     "maximum": 1000,
                     "singleStep": 1,
