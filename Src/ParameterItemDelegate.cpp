@@ -303,10 +303,6 @@ void ParameterItemDelegate::setModelData(QWidget *editor,
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
-    try {
-        SPDLOG_INFO("value: {}", item->value.toString().toStdString());
-    } catch (...) {
-    }
     if (IsColorType(item, m_schema)) {
         auto color_dialog = qobject_cast<QColorDialog *>(editor);
         QColor color = color_dialog->selectedColor();

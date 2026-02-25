@@ -1,6 +1,6 @@
 ﻿/**
  * Copyright © 2026 Zen Shawn. All rights reserved.
- * 
+ *
  * @file QJsonModel.cpp
  * @author: Zen Shawn
  * @email: xiaozisheng2008@hotmail.com
@@ -95,7 +95,6 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
     case nl::ordered_json::value_t::array:
     case nl::ordered_json::value_t::object: {
         for (auto &[k, v] : jv.items()) {
-            SPDLOG_INFO("load key: {}, v: {}", k, v.dump());
             QJsonTreeItem *child = load(v, schema, k, item, locale);
             if (child) {
                 item->children.append(child);
