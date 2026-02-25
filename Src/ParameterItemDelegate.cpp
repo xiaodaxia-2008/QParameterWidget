@@ -141,7 +141,8 @@ void ParameterItemDelegate::paint(QPainter *painter,
         painter->setPen(textColor);
         // Use the option's font (it handles bold/italic state changes)
         painter->setFont(opt.font);
-        painter->drawText(colorRect, Qt::AlignLeft, colorStr);
+        painter->drawText(colorRect, Qt::AlignVCenter | Qt::AlignLeft,
+                          colorStr);
 
         return;
     }
