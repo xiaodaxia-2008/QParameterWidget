@@ -1,4 +1,12 @@
-﻿#include <QParameterWidget/QJsonModel.h>
+﻿/**
+ * Copyright © 2026 Zen Shawn. All rights reserved.
+ * 
+ * @file QJsonModel.cpp
+ * @author: Zen Shawn
+ * @email: xiaozisheng2008@hotmail.com
+ * @date: 12:47:34, 2026-02-25
+ */
+#include <QParameterWidget/QJsonModel.h>
 
 #include <fmt/std.h>
 #include <spdlog/spdlog.h>
@@ -63,8 +71,7 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
     }
 
     if (!schema.contains(nl::json::json_pointer{item->schema_json_pointer})) {
-        SPDLOG_WARN("there is no schema for {}", item->schema_json_pointer);
-        // return nullptr;
+        SPDLOG_DEBUG("there is no schema for {}", item->schema_json_pointer);
     }
 
     nl::ordered_json::json_pointer jp_hidden(item->schema_json_pointer

@@ -37,6 +37,9 @@ public:
                      QWidget *parent = nullptr,
                      const QLocale &locale = QLocale());
     QParameterWidget(const std::shared_ptr<nl::ordered_json> &param,
+                     const nlohmann::json &schema, QWidget *parent = nullptr,
+                     const QLocale &locale = QLocale());
+    QParameterWidget(const std::shared_ptr<nl::ordered_json> &param,
                      QWidget *parent = nullptr,
                      const QLocale &locale = QLocale());
     ~QParameterWidget();

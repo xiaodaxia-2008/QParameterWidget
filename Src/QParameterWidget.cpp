@@ -40,6 +40,14 @@ QParameterWidget::QParameterWidget(const std::filesystem::path &param_path,
 }
 
 QParameterWidget::QParameterWidget(
+    const std::shared_ptr<nl::ordered_json> &param,
+    const nlohmann::json &schema, QWidget *parent, const QLocale &locale)
+    : QTreeView(parent)
+{
+    Init(param, schema, locale);
+}
+
+QParameterWidget::QParameterWidget(
     const std::shared_ptr<nl::ordered_json> &param, QWidget *parent,
     const QLocale &locale)
     : QTreeView(parent)
