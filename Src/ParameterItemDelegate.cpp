@@ -18,10 +18,14 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QSpinBox>
+
+#include <map>
 #include <string>
 
 namespace zen
 {
+
+static std::map<std::string, CustomizedDataEditor> customized_editors;
 
 template <typename T>
 T GetProperty(const nl::json &schema, const std::string &json_pointer,
@@ -78,6 +82,11 @@ bool IsColorType(const QJsonTreeItem *item, const nl::json &schema)
     return false;
 }
 
+void ParameterItemDelegate::RegisterTypeEditor(CustomizedDataEditor editor)
+{
+    customized_editors[editor.data_type] = std::move(editor);
+}
+
 ParameterItemDelegate::ParameterItemDelegate(const nl::json &schema,
                                              QObject *parent,
                                              const QLocale &locale)
@@ -117,6 +126,15 @@ void ParameterItemDelegate::paint(QPainter *painter,
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
+
+    if (!item_type.empty() && customized_editors.contains(item_type)) {
+        if (customized_editors[item_type].paint) {
+            customized_editors[item_type].paint(painter, option, index,
+                                                m_schema);
+            return;
+        }
+    }
+
     using value_t = nl::ordered_json::value_t;
     if (IsColorType(item, m_schema)) {
         // 1. Draw the standard selection/hover background first
@@ -210,6 +228,12 @@ QWidget *ParameterItemDelegate::createEditor(QWidget *parent,
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
+    if (!item_type.empty() && customized_editors.contains(item_type)) {
+        if (customized_editors[item_type].create_editor) {
+            return customized_editors[item_type].create_editor(parent, option,
+                                                               index, m_schema);
+        }
+    }
     using value_t = nl::ordered_json::value_t;
     if (item->type == value_t::number_integer
         || item->type == value_t::number_unsigned) {
@@ -285,6 +309,15 @@ void ParameterItemDelegate::setEditorData(QWidget *editor,
                                           const QModelIndex &index) const
 {
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
+    auto item_type = GetProperty<std::string>(
+        m_schema, item->schema_json_pointer + "/type", "");
+    if (!item_type.empty() && customized_editors.contains(item_type)) {
+        if (customized_editors[item_type].set_editor_data) {
+            customized_editors[item_type].set_editor_data(editor, index,
+                                                          m_schema);
+            return;
+        }
+    }
     if (IsColorType(item, m_schema)) {
         auto color_dialog = qobject_cast<QColorDialog *>(editor);
         color_dialog->setCurrentColor(QColor(item->value.toString()));
@@ -303,6 +336,13 @@ void ParameterItemDelegate::setModelData(QWidget *editor,
     auto item = static_cast<QJsonTreeItem *>(index.internalPointer());
     auto jp = item->schema_json_pointer;
     auto item_type = GetProperty<std::string>(m_schema, jp + "/type", "");
+    if (!item_type.empty() && customized_editors.contains(item_type)) {
+        if (customized_editors[item_type].set_model_data) {
+            customized_editors[item_type].set_model_data(editor, model, index,
+                                                         m_schema);
+            return;
+        }
+    }
     if (IsColorType(item, m_schema)) {
         auto color_dialog = qobject_cast<QColorDialog *>(editor);
         QColor color = color_dialog->selectedColor();
