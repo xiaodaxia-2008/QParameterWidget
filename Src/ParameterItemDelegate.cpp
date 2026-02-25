@@ -129,7 +129,7 @@ void ParameterItemDelegate::paint(QPainter *painter,
         // 2. Fill the cell with the item's color
         // We adjust the rect slightly to not overlap the grid lines if they
         // exist
-        QRect colorRect = opt.rect.adjusted(1, 1, -1, -1);
+        QRect colorRect = opt.rect.adjusted(4, 2, -4, -2);
         painter->fillRect(colorRect, bgColor);
 
         // 3. Determine "Contrast Color" (Black or White)
