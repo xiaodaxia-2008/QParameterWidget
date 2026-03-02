@@ -1,12 +1,11 @@
 # Copyright © 2023 Zen Shawn. All rights reserved.
 # Created at 11:49:57, August 18, 2023
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.24)
 
 option(BUILD_SHARED_LIBS "build shared libs" OFF)
 option(BUILD_EXAMPLES "build example" OFF)
 
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "build type, Release/Debug/MinSizeRel/RelWithDebInfo")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
@@ -14,9 +13,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/out" CACHE PATH "install prefix")
+set(CMAKE_VERIFY_INTERFACE_HEADER_SETS ON)
 
-project(QParameterWidget VERSION 0.0.0 DESCRIPTION "Introduction about QParameterWidget")
+project(QParameterWidget
+  VERSION 0.1.0
+  DESCRIPTION "QWidget for Json"
+)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake)
 
@@ -24,16 +26,6 @@ if(MSVC)
   add_compile_options(/W3)
 else()
   add_compile_options(-Wall -Wextra)
-endif()
-
-if(UNIX)
-  find_program(CCACHE_PROGRAM ccache)
-
-  if(CCACHE_PROGRAM)
-    message(STATUS "Found ccache")
-    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-  endif()
 endif()
 
 find_package(nlohmann_json CONFIG REQUIRED)

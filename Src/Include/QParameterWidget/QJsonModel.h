@@ -8,7 +8,7 @@
  */
 
 #pragma once
-#include <qparameterwidget_export.h>
+#include "qparameterwidget_export.h"
 
 #include <QAbstractItemModel>
 #include <QLocale>

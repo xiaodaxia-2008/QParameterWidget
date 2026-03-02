@@ -7,9 +7,9 @@
  * @date: 16:01:17, 2026-02-25
  */
 #pragma once
+#include "qparameterwidget_export.h"
 #include <QStyledItemDelegate>
 #include <nlohmann/json.hpp>
-#include <qparameterwidget_export.h>
 
 #include <filesystem>
 

@@ -105,7 +105,7 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
             if (child) {
                 item->children.append(child);
             } else {
-                SPDLOG_WARN("failed to construct QJsonTreeItem for {}", k);
+                SPDLOG_DEBUG("failed to construct QJsonTreeItem for {}", k);
             }
         }
     } break;
@@ -130,7 +130,7 @@ QJsonTreeItem *QJsonTreeItem::load(const nl::ordered_json &jv,
         SPDLOG_DEBUG("null/binary/discarded type is ignored!");
     } break;
     default: {
-        SPDLOG_WARN("This type is ignored!");
+        SPDLOG_WARN("This type {} is ignored!", jv.type_name());
     } break;
     }
     return item;

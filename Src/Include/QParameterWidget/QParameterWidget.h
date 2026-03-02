@@ -10,7 +10,7 @@
 #pragma once
 #include <QLocale>
 #include <QTreeView>
-#include <qparameterwidget_export.h>
+#include "qparameterwidget_export.h"
 
 
 #include <nlohmann/json.hpp>
